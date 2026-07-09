@@ -1,4 +1,4 @@
-
+,
 CREATE DATABASE IF NOT EXISTS orderready;
 USE orderready;
 
@@ -71,3 +71,31 @@ INSERT INTO inventory (material_id, current_quantity) VALUES
 (5, 80),
 (6, 5000),
 (7, 400);
+
+CREATE TABLE suppliers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    contact_email VARCHAR(255)
+);
+
+CREATE TABLE supplier_materials (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    supplier_id BIGINT NOT NULL,
+    material_id BIGINT NOT NULL,
+    lead_time_batch_size DECIMAL(10,2) NOT NULL,
+    lead_time_days DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
+    FOREIGN KEY (material_id) REFERENCES materials(id)
+);
+
+INSERT INTO suppliers (name, contact_email) VALUES
+('Petrokim Kimya A.Ş.', 'siparis@petrokim.com'),
+('Anadolu Plastik Hammadde', 'tedarik@anadoluplastik.com'),
+('Mermer Tozu San. Tic.', 'info@mermertozu.com');
+
+INSERT INTO supplier_materials (supplier_id, material_id, lead_time_batch_size, lead_time_days) VALUES
+(1, 1, 10, 2),
+(1, 2, 10, 2),
+(2, 3, 10, 3),
+(2, 5, 10, 4),
+(3, 4, 10, 1);
