@@ -1,0 +1,56 @@
+
+CREATE DATABASE IF NOT EXISTS orderready;
+USE orderready;
+
+CREATE TABLE products (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    production_batch_size DECIMAL(10,2),
+    production_time_days DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE materials (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    type VARCHAR(50) NOT NULL,
+    unit VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE recipes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    material_id BIGINT NOT NULL,
+    quantity_per_10kg DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (material_id) REFERENCES materials(id)
+);
+
+CREATE TABLE inventory (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    material_id BIGINT NOT NULL UNIQUE,
+    current_quantity DECIMAL(10,2) NOT NULL DEFAULT 0,
+    last_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (material_id) REFERENCES materials(id)
+);
+
+INSERT INTO products (name) VALUES
+('Yüksek Yoğunluklu Orijinal Poşet'),
+('Yüksek Yoğunluklu Kalsitli Poşet'),
+('Yüksek Yoğunluklu Geri Dönüşümlü Poşet'),
+('Alçak Yoğunluklu Orijinal Poşet');
+
+INSERT INTO materials (name, type, unit) VALUES
+('HDPE', 'RAW_MATERIAL', 'kg'),
+('LLDPE', 'RAW_MATERIAL', 'kg'),
+('LDPE', 'RAW_MATERIAL', 'kg'),
+('Kalsit (Mermer Tozu)', 'RAW_MATERIAL', 'kg'),
+('Geri Dönüştürülmüş Hammadde', 'RAW_MATERIAL', 'kg'),
+('İç Ambalaj', 'PACKAGING', 'adet'),
+('Dış Ambalaj', 'PACKAGING', 'adet');
+
+INSERT INTO recipes (product_id, material_id, quantity_per_10kg) VALUES
+(1, 1, 8.5), (1, 2, 1.5), (1, 6, 10), (1, 7, 1),
+(2, 4, 5), (2, 2, 1), (2, 1, 4), (2, 6, 10), (2, 7, 1),
+(3, 5, 4), (3, 1, 5), (3, 2, 1), (3, 6, 10), (3, 7, 1),
+(4, 2, 5), (4, 3, 5), (4, 6, 10), (4, 7, 1);
