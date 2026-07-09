@@ -54,3 +54,20 @@ INSERT INTO recipes (product_id, material_id, quantity_per_10kg) VALUES
 (2, 4, 5), (2, 2, 1), (2, 1, 4), (2, 6, 10), (2, 7, 1),
 (3, 5, 4), (3, 1, 5), (3, 2, 1), (3, 6, 10), (3, 7, 1),
 (4, 2, 5), (4, 3, 5), (4, 6, 10), (4, 7, 1);
+
+CREATE TABLE inventory (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    material_id BIGINT NOT NULL UNIQUE,
+    current_quantity DECIMAL(10,2) NOT NULL DEFAULT 0,
+    last_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (material_id) REFERENCES materials(id)
+);
+
+INSERT INTO inventory (material_id, current_quantity) VALUES
+(1, 500),
+(2, 150),
+(3, 200),
+(4, 300),
+(5, 80),
+(6, 5000),
+(7, 400);
