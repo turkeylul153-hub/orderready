@@ -9,6 +9,7 @@ import java.util.List;
 
 // Material yönetimi için REST endpoint'lerini sunar
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/materials") // url belirler
 public class MaterialController {
 

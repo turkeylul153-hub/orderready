@@ -9,6 +9,7 @@ import java.util.List;
 
 //bu sınıf webden gelen product işlemlerine ait http isteklerini karşılar.
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/products")
 public class ProductController {
 
