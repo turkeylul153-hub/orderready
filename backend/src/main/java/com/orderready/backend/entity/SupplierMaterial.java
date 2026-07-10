@@ -22,13 +22,17 @@ public class SupplierMaterial {
     @JoinColumn(name = "material_id", nullable = false)
     private Material material;
 
-    // tedarik süresinin hesaplandığı miktar birimi
+    // tedarik süresinin hesaplandığı miktar birimi (örn: 10 kg)
     @Column(name = "lead_time_batch_size", nullable = false)
     private BigDecimal leadTimeBatchSize;
 
-    // o miktarın kaç günde tedarik edildiği
+    // o miktarın kaç günde tedarik edildiği (örn: 2 gün) - tedarikçide hazır stok yoksa kullanılan tahmini süre
     @Column(name = "lead_time_days", nullable = false)
     private BigDecimal leadTimeDays;
+
+    // tedarikçinin şu an elinde hazır bulunan miktar - tedarikçi kendi panelinden günceller
+    @Column(name = "available_quantity", nullable = false)
+    private BigDecimal availableQuantity;
 
 
     public Long getId() { return id; }
@@ -45,4 +49,7 @@ public class SupplierMaterial {
 
     public BigDecimal getLeadTimeDays() { return leadTimeDays; }
     public void setLeadTimeDays(BigDecimal leadTimeDays) { this.leadTimeDays = leadTimeDays; }
+
+    public BigDecimal getAvailableQuantity() { return availableQuantity; }
+    public void setAvailableQuantity(BigDecimal availableQuantity) { this.availableQuantity = availableQuantity; }
 }
