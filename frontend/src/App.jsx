@@ -1,3 +1,4 @@
+import InventoryPage from './InventoryPage'
 import { useState, useEffect } from 'react'
 import './App.css'
 
@@ -19,6 +20,7 @@ function App() {
           <li key={product.id}>{product.name}</li>
         ))}
       </ul>
+      <InventoryPage />
     </div>
   )
 }
