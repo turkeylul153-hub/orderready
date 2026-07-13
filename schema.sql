@@ -99,3 +99,12 @@ INSERT INTO supplier_materials (supplier_id, material_id, lead_time_batch_size, 
 (2, 3, 10, 3),
 (2, 5, 10, 4),
 (3, 4, 10, 1);
+
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    supplier_id BIGINT,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
+);
