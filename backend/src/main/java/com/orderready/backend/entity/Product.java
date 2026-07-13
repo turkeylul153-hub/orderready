@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// bir ürünü (poşet türünü) ve üretim özelliklerini temsil eder
 @Entity
 @Table(name = "products")
 public class Product {
@@ -14,28 +15,22 @@ public class Product {
 
     @Column(nullable = false)
     private String name;
-// bir üretim partisinde kaç kg üretildi?
-    @Column(name = "production_batch_size")
-    private BigDecimal productionBatchSize;
-// üretim kaç gün sürüyor?
-    @Column(name = "production_time_days")
-    private BigDecimal productionTimeDays;
+
+    // saatte kaç kg üretildiği
+    @Column(name = "production_rate_kg_per_hour")
+    private BigDecimal productionRateKgPerHour;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Getter, Setter priv degiskene kontrollu erisim ve degistirme
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public BigDecimal getProductionBatchSize() { return productionBatchSize; }
-    public void setProductionBatchSize(BigDecimal productionBatchSize) { this.productionBatchSize = productionBatchSize; }
-
-    public BigDecimal getProductionTimeDays() { return productionTimeDays; }
-    public void setProductionTimeDays(BigDecimal productionTimeDays) { this.productionTimeDays = productionTimeDays; }
+    public BigDecimal getProductionRateKgPerHour() { return productionRateKgPerHour; }
+    public void setProductionRateKgPerHour(BigDecimal productionRateKgPerHour) { this.productionRateKgPerHour = productionRateKgPerHour; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
