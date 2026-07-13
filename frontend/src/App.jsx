@@ -1,3 +1,4 @@
+import CalculatorPage from './CalculatorPage'
 import InventoryPage from './InventoryPage'
 import { useState, useEffect } from 'react'
 import './App.css'
@@ -21,6 +22,7 @@ function App() {
         ))}
       </ul>
       <InventoryPage />
+      <CalculatorPage />
     </div>
   )
 }
