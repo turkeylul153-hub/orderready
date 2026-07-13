@@ -31,7 +31,15 @@ function CalculatorPage() {
       .then(response => response.json())
       .then(data => setResult(data))
   }
-
+// saat cinsinden süreyi "X gün Y saat" formatına çevirir
+  function formatDuration(hours) {
+    if (hours < 24) {
+      return `${hours} saat`
+    }
+    const days = Math.floor(hours / 24)
+    const remainingHours = (hours % 24).toFixed(2)
+    return `${days} gün ${remainingHours} saat`
+  }
   return (
     <div>
       <h2>Üretim planlama hesaplama</h2>
@@ -60,7 +68,7 @@ function CalculatorPage() {
           <h3>{result.productName} - {result.requestedQuantity} kg</h3>
           <p>Üretim süresi: {result.productionTimeHours} saat</p>
           <p>Tedarik süresi: {result.supplyTimeDays} gün</p>
-          <p><strong>Toplam süre: {result.totalTimeHours} saat</strong></p>
+          <p><strong>Toplam süre: {formatDuration(result.totalTimeHours)}</strong></p>
 
           <table border="1" cellPadding="8">
             <thead>
