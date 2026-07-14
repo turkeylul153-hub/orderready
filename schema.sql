@@ -115,3 +115,10 @@ INSERT INTO users (username, password, role) VALUES
 
 INSERT INTO users (username, password, role, supplier_id) VALUES
 ('petrokim_user', '$2a$10$IvvSLGAGiA6MONsjEmjB/.ORjzsb7haZD7EC0wOrcN3spdfInjIwa', 'SUPPLIER', 1);
+
+-- Tedarikçi lead time değerleri güncellendi (daha gerçekçi parti büyüklükleri)
+UPDATE supplier_materials SET lead_time_batch_size = 500, lead_time_days = 3 WHERE supplier_id = 1 AND material_id = 1;
+UPDATE supplier_materials SET lead_time_batch_size = 500, lead_time_days = 3 WHERE supplier_id = 1 AND material_id = 2;
+UPDATE supplier_materials SET lead_time_batch_size = 300, lead_time_days = 4 WHERE supplier_id = 2 AND material_id = 3;
+UPDATE supplier_materials SET lead_time_batch_size = 300, lead_time_days = 5 WHERE supplier_id = 2 AND material_id = 5;
+UPDATE supplier_materials SET lead_time_batch_size = 400, lead_time_days = 2 WHERE supplier_id = 3 AND material_id = 4;
