@@ -108,3 +108,10 @@ CREATE TABLE users (
     supplier_id BIGINT,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
 );
+
+INSERT INTO users (username, password, role) VALUES
+('depo1', '$2a$10$/0PNZer21KQ3i0Mpevh9M.5PjJ3n2aWwA5kexjkGOBUZoUL8MSSnW', 'WAREHOUSE'),
+('planlamaci1', '$2a$10$ortvqcumyvYHhqa4QNFK.eqrLYhUoEl3C461XId3XxiKBRxIGkkJy', 'PLANNER');
+
+INSERT INTO users (username, password, role, supplier_id) VALUES
+('petrokim_user', '$2a$10$IvvSLGAGiA6MONsjEmjB/.ORjzsb7haZD7EC0wOrcN3spdfInjIwa', 'SUPPLIER', 1);
