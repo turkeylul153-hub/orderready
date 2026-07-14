@@ -32,14 +32,19 @@ function CalculatorPage() {
       .then(data => setResult(data))
   }
 // saat cinsinden süreyi "X gün Y saat" formatına çevirir
-  function formatDuration(hours) {
-    if (hours < 24) {
-      return `${hours} saat`
+    // kalan saat 12'den azsa gün sayısı sabit kalır, 12 veya fazlaysa bir gün eklenir
+    function formatDuration(hours) {
+      if (hours < 24) {
+        return `${hours} saat`
+      }
+      const days = Math.floor(hours / 24)
+      const remainingHours = hours % 24
+
+      if (remainingHours >= 12) {
+        return `${days + 1} gün`
+      }
+      return `${days} gün`
     }
-    const days = Math.floor(hours / 24)
-    const remainingHours = (hours % 24).toFixed(2)
-    return `${days} gün ${remainingHours} saat`
-  }
   return (
     <div>
       <h2>Üretim planlama hesaplama</h2>
@@ -91,7 +96,7 @@ function CalculatorPage() {
                   <td>{status.shortfall} {status.unit}</td>
                   <td>{status.supplierName ?? '-'}</td>
                   <td>{status.supplierHasStock ? 'Evet' : 'Hayır'}</td>
-                  <td>{status.estimatedSupplyDays ?? '-'}</td>
+                  <td>{status.estimatedSupplyDays != null ? Math.round(status.estimatedSupplyDays) : '-'}</td>
                 </tr>
               ))}
             </tbody>
