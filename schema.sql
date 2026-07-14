@@ -122,3 +122,11 @@ UPDATE supplier_materials SET lead_time_batch_size = 500, lead_time_days = 3 WHE
 UPDATE supplier_materials SET lead_time_batch_size = 300, lead_time_days = 4 WHERE supplier_id = 2 AND material_id = 3;
 UPDATE supplier_materials SET lead_time_batch_size = 300, lead_time_days = 5 WHERE supplier_id = 2 AND material_id = 5;
 UPDATE supplier_materials SET lead_time_batch_size = 400, lead_time_days = 2 WHERE supplier_id = 3 AND material_id = 4;
+
+-- Tedarikçi hazır stok miktarları daha gerçekçi değerlerle güncellendi
+UPDATE supplier_materials SET available_quantity = 800 WHERE supplier_id = 1 AND material_id = 1;
+UPDATE supplier_materials SET available_quantity = 600 WHERE supplier_id = 1 AND material_id = 2;
+UPDATE supplier_materials SET available_quantity = 500 WHERE supplier_id = 2 AND material_id = 3;
+UPDATE supplier_materials SET available_quantity = 400 WHERE supplier_id = 2 AND material_id = 5;
+UPDATE supplier_materials SET available_quantity = 600 WHERE supplier_id = 3 AND material_id = 4;
+
