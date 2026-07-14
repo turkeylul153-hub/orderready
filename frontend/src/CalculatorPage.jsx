@@ -46,7 +46,7 @@ function CalculatorPage() {
       return `${days} gün`
     }
   return (
-    <div>
+    <div className="card">
       <h2>Üretim planlama hesaplama</h2>
 
       {/* ürün seçim kutusu */}

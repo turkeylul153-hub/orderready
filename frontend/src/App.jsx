@@ -23,17 +23,22 @@ function App() {
   }
 
   // giriş yapıldıysa, role göre doğru ekranı göster
-  return (
-    <div>
-      <h1>OrderReady</h1>
-      <p>Hoş geldin, {currentUser.username} ({currentUser.role})</p>
-      <button onClick={handleLogout}>Çıkış yap</button>
+ return (
+     <div>
+       <div className="app-header">
+         <h1>OrderReady</h1>
+         <div className="user-info">
+           <span>{currentUser.username}</span>
+           <span className="role-badge">{currentUser.role}</span>
+           <button className="secondary" onClick={handleLogout}>Çıkış yap</button>
+         </div>
+       </div>
 
-      {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
-      {currentUser.role === 'PLANNER' && <CalculatorPage />}
-      {currentUser.role === 'SUPPLIER' && <p>Tedarikçi ekranı yakında...</p>}
-    </div>
-  )
+       {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
+       {currentUser.role === 'PLANNER' && <CalculatorPage />}
+       {currentUser.role === 'SUPPLIER' && <p>Tedarikçi ekranı yakında...</p>}
+     </div>
+   )
 }
 
 export default App

@@ -29,24 +29,26 @@ function LoginPage({ onLoginSuccess }) {
   }
 
   return (
-    <div>
-      <h2>Giriş yap</h2>
-      <input
-        type="text"
-        placeholder="Kullanıcı adı"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Şifre"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleLogin}>Giriş yap</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-    </div>
-  )
+      <div className="login-screen">
+        <div className="login-card">
+          <h2>OrderReady'e giriş yap</h2>
+          <input
+            type="text"
+            placeholder="Kullanıcı adı"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Şifre"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button onClick={handleLogin}>Giriş yap</button>
+          {error && <p className="error-text">{error}</p>}
+        </div>
+      </div>
+    )
 }
 
 export default LoginPage

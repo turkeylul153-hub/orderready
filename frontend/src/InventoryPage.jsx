@@ -40,7 +40,7 @@ function InventoryPage() {
   }
 
   return (
-    <div>
+    <div className="card">
       <h2>Depo stok güncelleme</h2>
       <table border="1" cellPadding="8">
         <thead>
