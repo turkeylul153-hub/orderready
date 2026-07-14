@@ -1,28 +1,37 @@
-import CalculatorPage from './CalculatorPage'
-import InventoryPage from './InventoryPage'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './App.css'
+import LoginPage from './LoginPage'
+import InventoryPage from './InventoryPage'
+import CalculatorPage from './CalculatorPage'
 
 function App() {
-  const [products, setProducts] = useState([])
+  // giriş yapan kullanıcının bilgisini tutar (null ise henüz giriş yapılmamış demektir)
+  const [currentUser, setCurrentUser] = useState(null)
 
-  useEffect(() => {
-    fetch('http://localhost:8080/api/products')
-      .then(response => response.json())
-      .then(data => setProducts(data))
-  }, [])
+  // LoginPage'den gelen "giriş başarılı" bilgisini işler
+  function handleLoginSuccess(userData) {
+    setCurrentUser(userData)
+  }
 
+  function handleLogout() {
+    setCurrentUser(null)
+  }
+
+  // kullanıcı giriş yapmadıysa, sadece giriş ekranını göster
+  if (!currentUser) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />
+  }
+
+  // giriş yapıldıysa, role göre doğru ekranı göster
   return (
     <div>
       <h1>OrderReady</h1>
-      <h2>Ürünler</h2>
-      <ul>
-        {products.map(product => (
-          <li key={product.id}>{product.name}</li>
-        ))}
-      </ul>
-      <InventoryPage />
-      <CalculatorPage />
+      <p>Hoş geldin, {currentUser.username} ({currentUser.role})</p>
+      <button onClick={handleLogout}>Çıkış yap</button>
+
+      {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
+      {currentUser.role === 'PLANNER' && <CalculatorPage />}
+      {currentUser.role === 'SUPPLIER' && <p>Tedarikçi ekranı yakında...</p>}
     </div>
   )
 }
