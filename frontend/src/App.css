@@ -26,6 +26,7 @@ body {
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
+  color-scheme: light;
 }
 
 /* Üst başlık alanı */
@@ -120,6 +121,7 @@ input, select {
   margin-right: 0.5rem;
   background: #fbfefc;
   transition: border-color 0.2s;
+  color: var(--text-dark);
 }
 
 input:focus, select:focus {
