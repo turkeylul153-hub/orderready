@@ -1,38 +1,37 @@
+cat > README.md << 'EOF'
 # OrderReady
 
-Depo, üretim planlama ve tedarikçi süreçlerini birleştiren, reçete tabanlı stok ve sipariş planlama sistemi.
+Depo, üretim planlama ve satış süreçlerini birleştiren, sipariş ve reçete tabanlı stok yönetim sistemi.
 
 ## Problem ve Amaç
 
-Poşet üretimi yapan bir fabrikada, her ürünün kendine özgü bir reçetesi vardır: belirli miktarda hammadde ve ambalaj malzemesi kullanılarak üretilir. Bu sistemde üç ayrı süreç birbirinden kopuk ilerliyordu:
+Poşet üretimi yapan bir fabrikada, depo, üretim planlama ve satış süreçleri birbirinden kopuk ilerliyordu. OrderReady, bu süreçleri tek bir sistemde birleştirir:
 
-- **Depo**, elindeki hammadde ve ambalaj stoğunu güncel tutmakta zorlanıyor.
-- **Tedarik**, hangi malzemenin hangi firmadan, ne kadar sürede geldiği net değil.
-- **Üretim planlama**, bir müşteri talebi geldiğinde ("50 kg X ürününden istiyorum") elde yeterli malzeme olup olmadığını, eksikse ne kadar süre sonra tedarik edilebileceğini ve toplamda ne zaman teslimat yapılabileceğini hızlıca hesaplayamıyor.
+- **Satış**, yeni müşteri siparişlerini sisteme girer
+- **Üretim Planlama**, gelen siparişleri görür, üretime başlatır ve tamamlar
+- **Depo**, hammadde ve bitmiş ürün stoğunu yönetir, gönderim yapar
 
-**OrderReady**, bu üç süreci tek bir sistemde birleştirerek:
-- Depo çalışanlarının güncel stok bilgisi girmesini sağlar,
-- Hangi hammaddenin hangi tedarikçiden geldiğini ve tedarik süresini kayıt altına alır,
-- Üretim planlamacının bir ürün ve miktar girerek, gerekli hammaddelerin yeterli olup olmadığını, eksikse tedarik süresini, üretim süresini ve toplam teslimat süresini anında görmesini sağlar.
-
-Amaç: malzeme siparişini kolaylaştırmak, depo ile üretim planlama arasında bir köprü kurmak, ve müşteri talebine hızlı ve net bir teslimat tarihi ile geri dönüş yapabilmek.
+Sipariş durumu değiştikçe (üretime başla → tamamlandı → gönderildi), ilgili stok hareketleri **otomatik olarak** kaydedilir. Tüm stok hareketleri işlem bazlı tutulur — hiçbir kayıt silinmez veya değiştirilmez, sadece yeni düzeltme kayıtları eklenir. Bu sayede geçmişteki herhangi bir tarih için "o an ne kadar stok vardı" sorusuna her zaman net cevap verilebilir.
 
 ## Kullanılacak Teknolojiler
 
 - **Backend:** Java 17 / Spring Boot
 - **Veritabanı:** MySQL
 - **Frontend:** React
-- **Veri Görselleştirme / Arayüz:** React bileşenleri ile form ve tablo tabanlı ekranlar
+- **Kimlik Doğrulama:** BCrypt ile şifrelenmiş, rol tabanlı giriş sistemi (Depo / Satış / Üretim Planlama)
 
-## Kapsam 
+## Kapsam (v1)
 
-- Ürün (poşet türü) ve reçete yönetimi
-- Hammadde/ambalaj malzemesi ve stok takibi (depo güncellemesi)
-- Tedarikçi ve tedarik süresi yönetimi
-- Sipariş hesaplama motoru: ürün + miktar girildiğinde eksik malzeme, tedarik süresi, üretim süresi ve toplam süre hesaplama
+- Ürün ve reçete (BOM) yönetimi
+- Rol tabanlı giriş sistemi
+- Satış: yeni sipariş oluşturma
+- Üretim planlama: sipariş listesi, üretime başlatma, tamamlama
+- Depo: hammadde/ürün stok takibi, elle ekleme/çıkarma, gönderim
+- transaction-based stok geçmişi
 
-## Kapsam Dışı ( ileride eklenebilir)
+## Kapsam Dışı (v1 için, ileride eklenebilir)
 
-- Tedarikçilere otomatik e-posta gönderimi
-- Çoklu depo/lokasyon desteği
-- Maliyet hesaplama ve faturalandırma
+- Çoklu depo desteği (altyapı hazır, arayüz yok)
+- Düşük stok otomatik bildirimi (e-posta/SMS)
+- Raporlama ve analitik ekranları
+
