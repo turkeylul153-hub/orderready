@@ -130,3 +130,71 @@ UPDATE supplier_materials SET available_quantity = 500 WHERE supplier_id = 2 AND
 UPDATE supplier_materials SET available_quantity = 400 WHERE supplier_id = 2 AND material_id = 5;
 UPDATE supplier_materials SET available_quantity = 600 WHERE supplier_id = 3 AND material_id = 4;
 
+-- Tedarikçi/lead-time hesaplama kısmı kaldırıldı, yerine sipariş ve transaction bazlı stok sistemi geldi
+DROP TABLE IF EXISTS supplier_materials;
+
+ALTER TABLE users DROP FOREIGN KEY users_ibfk_1;
+ALTER TABLE users DROP COLUMN supplier_id;
+
+DROP TABLE IF EXISTS suppliers;
+
+DELETE FROM users WHERE username = 'petrokim_user';
+
+CREATE TABLE warehouses (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+INSERT INTO warehouses (name) VALUES ('Ana Fabrika Deposu');
+
+ALTER TABLE materials ADD COLUMN low_stock_threshold DECIMAL(10,2) DEFAULT 0;
+
+CREATE TABLE orders (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    quantity_kg DECIMAL(10,2) NOT NULL,
+    customer_name VARCHAR(255),
+    priority VARCHAR(20) NOT NULL DEFAULT 'NORMAL',
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+CREATE TABLE material_stock_tx (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    material_id BIGINT NOT NULL,
+    warehouse_id BIGINT NOT NULL,
+    quantity_change DECIMAL(10,2) NOT NULL,
+    balance_after DECIMAL(10,2) NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    order_id BIGINT,
+    performed_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (material_id) REFERENCES materials(id),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (performed_by) REFERENCES users(id)
+);
+
+CREATE TABLE product_stock_tx (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    warehouse_id BIGINT NOT NULL,
+    quantity_change DECIMAL(10,2) NOT NULL,
+    balance_after DECIMAL(10,2) NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    order_id BIGINT,
+    performed_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (performed_by) REFERENCES users(id)
+);
+
+-- Mevcut fabrika stoklarını yeni transaction tablosuna başlangıç kaydı olarak taşı
+INSERT INTO material_stock_tx (material_id, warehouse_id, quantity_change, balance_after, type, created_at)
+SELECT material_id, 1, current_quantity, current_quantity, 'INITIAL', last_updated_at
+FROM inventory;
