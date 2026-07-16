@@ -8,7 +8,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-// kullanıcı giriş (login) işlemlerini yönetir
+// login işlemlerini yönetir
 @Service
 public class AuthService {
 
@@ -31,9 +31,6 @@ public class AuthService {
         LoginResponse response = new LoginResponse();
         response.setUsername(user.getUsername());
         response.setRole(user.getRole());
-        if (user.getSupplier() != null) {
-            response.setSupplierId(user.getSupplier().getId());
-        }
         return response;
     }
 }
