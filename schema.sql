@@ -198,3 +198,6 @@ CREATE TABLE product_stock_tx (
 INSERT INTO material_stock_tx (material_id, warehouse_id, quantity_change, balance_after, type, created_at)
 SELECT material_id, 1, current_quantity, current_quantity, 'INITIAL', last_updated_at
 FROM inventory;
+
+INSERT INTO users (username, password, role) VALUES
+('satis1', '$2a$10$RUjU7sOMoaz/EgwGxD97s.kcv5hIDezRj4uSIg8ct7m9fvpH0V5Xu', 'SALES');

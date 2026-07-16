@@ -1,13 +1,12 @@
 package com.orderready.backend;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mindrot.jbcrypt.BCrypt;
 
-@SpringBootTest
 class BackendApplicationTests {
 
     @Test
-    void contextLoads() {
+    void generatePasswordHash() {
+        System.out.println(BCrypt.hashpw("satis123", BCrypt.gensalt()));
     }
-
 }
