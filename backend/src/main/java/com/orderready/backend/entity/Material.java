@@ -1,20 +1,21 @@
 package com.orderready.backend.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
-
+// hammadde veya ambalaj malzemesini temsil eder
 @Entity
 @Table(name = "materials")
 public class Material {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // id no otomatik artar.
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
     private String name;
 
-    // RAW_MATERIAL (hammadde) veya PACKAGING (ambalaj)
+    // RAW_MATERIAL veya PACKAGING
     @Column(nullable = false)
     private String type;
 
@@ -22,6 +23,9 @@ public class Material {
     @Column(nullable = false)
     private String unit;
 
+    // bu seviyenin altına düşünce depo çalışanına uyarı gösterilecek
+    @Column(name = "low_stock_threshold")
+    private BigDecimal lowStockThreshold;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -34,4 +38,7 @@ public class Material {
 
     public String getUnit() { return unit; }
     public void setUnit(String unit) { this.unit = unit; }
+
+    public BigDecimal getLowStockThreshold() { return lowStockThreshold; }
+    public void setLowStockThreshold(BigDecimal lowStockThreshold) { this.lowStockThreshold = lowStockThreshold; }
 }
