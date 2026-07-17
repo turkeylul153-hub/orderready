@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// bir müşteri siparişini temsil eder
+//müşteri siparişini temsil eder
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -27,9 +27,13 @@ public class Order {
     @Column(nullable = false)
     private String priority = "NORMAL";
 
-    // PENDING, IN_PRODUCTION, COMPLETED, SHIPPED
+    // PENDING (beklemede), IN_PRODUCTION (üretimde), COMPLETED (tamamlandı), SHIPPED (gönderildi)
     @Column(nullable = false)
     private String status = "PENDING";
+
+    // müşterinin özel isteği veya sipariş notu
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 
     @ManyToOne
     @JoinColumn(name = "created_by")
@@ -55,6 +59,9 @@ public class Order {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     public User getCreatedBy() { return createdBy; }
     public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
