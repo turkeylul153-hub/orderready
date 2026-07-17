@@ -201,3 +201,32 @@ FROM inventory;
 
 INSERT INTO users (username, password, role) VALUES
 ('satis1', '$2a$10$RUjU7sOMoaz/EgwGxD97s.kcv5hIDezRj4uSIg8ct7m9fvpH0V5Xu', 'SALES');
+
+-- Tedarikçi sistemi basitleştirilmiş haliyle geri eklendi (lead-time hesaplaması olmadan)
+CREATE TABLE suppliers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    contact_email VARCHAR(150)
+);
+
+CREATE TABLE supplier_materials (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    supplier_id BIGINT NOT NULL,
+    material_id BIGINT NOT NULL,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
+    FOREIGN KEY (material_id) REFERENCES materials(id)
+);
+
+INSERT INTO suppliers (name, contact_email) VALUES
+('Petrokim Kimya A.Ş.', 'siparis@petrokim.com'),
+('Anadolu Plastik Hammadde', 'tedarik@anadoluplastik.com'),
+('Mermer Tozu San. Tic.', 'info@mermertozu.com');
+
+INSERT INTO supplier_materials (supplier_id, material_id) VALUES
+(1, 1),
+(1, 2),
+(2, 3),
+(2, 5),
+(3, 4);
+
+ALTER TABLE orders ADD COLUMN notes TEXT;
