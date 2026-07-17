@@ -8,6 +8,7 @@
   --text-dark: #1a2e22;
   --text-muted: #6b7280;
   --shadow: 0 2px 8px rgba(20, 83, 45, 0.08);
+  color-scheme: light;
 }
 
 * {
@@ -26,7 +27,6 @@ body {
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
-  color-scheme: light;
 }
 
 /* Üst başlık alanı */
@@ -95,6 +95,7 @@ button {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.1s, background 0.2s;
+  margin-right: 0.5rem;
 }
 
 button:hover {
@@ -120,8 +121,8 @@ input, select {
   font-size: 0.9rem;
   margin-right: 0.5rem;
   background: #fbfefc;
-  transition: border-color 0.2s;
   color: var(--text-dark);
+  transition: border-color 0.2s;
 }
 
 input:focus, select:focus {
@@ -202,4 +203,26 @@ tr:hover td {
   color: #dc2626;
   font-size: 0.85rem;
   margin-top: 0.75rem;
+}
+
+/* Sipariş detay paneli */
+.order-detail-panel {
+  background: var(--green-bg);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.order-detail-panel p {
+  margin: 0.3rem 0;
+  color: var(--text-dark);
+}
+
+.order-detail-panel table {
+  margin-top: 0.75rem;
+  box-shadow: none;
+  border: 1px solid #d1e7d8;
+}
+td button {
+  margin-bottom: 0.4rem;
 }

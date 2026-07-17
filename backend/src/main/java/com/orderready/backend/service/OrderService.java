@@ -29,15 +29,35 @@ public class OrderService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
-    // siparişi üretime başlatır: durumu değiştirir ve gereken hammaddeyi depodan düşer
+    // siparişi üretime başlatır: önce stok yeterliliğini kontrol eder, sonra hammaddeyi düşer
     public Order startProduction(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı"));
 
-        Warehouse warehouse = warehouseRepository.findAll().get(0); // şimdilik tek depo
+        Warehouse warehouse = warehouseRepository.findAll().get(0);
 
         List<Recipe> recipes = recipeRepository.findByProduct_Id(order.getProduct().getId());
 
+        // 1. Adım: Önce tüm malzemelerin yeterli olup olmadığını kontrol et
+        for (Recipe recipe : recipes) {
+            BigDecimal required = recipe.getQuantityPer100kg()
+                    .multiply(order.getQuantityKg())
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+            BigDecimal currentBalance = materialTxRepository
+                    .findFirstByMaterial_IdOrderByCreatedAtDesc(recipe.getMaterial().getId())
+                    .map(MaterialStockTransaction::getBalanceAfter)
+                    .orElse(BigDecimal.ZERO);
+
+            if (currentBalance.compareTo(required) < 0) {
+                throw new RuntimeException(
+                        "Yetersiz stok: " + recipe.getMaterial().getName() +
+                                " (gereken: " + required + ", mevcut: " + currentBalance + ")"
+                );
+            }
+        }
+
+        // 2. Adım: Kontrol geçildi, şimdi gerçekten düşüş yap
         for (Recipe recipe : recipes) {
             BigDecimal required = recipe.getQuantityPer100kg()
                     .multiply(order.getQuantityKg())
