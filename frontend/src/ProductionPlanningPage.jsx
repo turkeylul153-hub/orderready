@@ -23,11 +23,15 @@ function ProductionPlanningPage() {
     })
       .then(response => {
         if (!response.ok) {
-          return response.text().then(text => { throw new Error(text) })
+          return response.json().then(data => {
+            throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+          })
         }
         return response.json()
       })
-      .then(() => fetchOrders())
+      .then(() => {
+        fetchOrders()
+      })
       .catch(error => {
         setErrorMessage(error.message)
       })
@@ -40,11 +44,15 @@ function ProductionPlanningPage() {
     })
       .then(response => {
         if (!response.ok) {
-          return response.text().then(text => { throw new Error(text) })
+          return response.json().then(data => {
+            throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+          })
         }
         return response.json()
       })
-      .then(() => fetchOrders())
+      .then(() => {
+        fetchOrders()
+      })
       .catch(error => {
         setErrorMessage(error.message)
       })
