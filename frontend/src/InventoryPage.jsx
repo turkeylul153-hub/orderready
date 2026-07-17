@@ -1,72 +1,81 @@
 import { useState, useEffect } from 'react'
 
 function InventoryPage() {
-  // backendden gelen stok listesini tutar
-  const [inventory, setInventory] = useState([])
+  const [stock, setStock] = useState([])
+  const [amounts, setAmounts] = useState({})
+  const [errorMessage, setErrorMessage] = useState('')
 
-  // kullanıcının input kutularına yazdığı, henüz kaydedilmemiş değerleri tutar
-  const [edits, setEdits] = useState({})
-
-  // sayfa ilk açıldığında bir kere stok listesini çeker
   useEffect(() => {
-    fetchInventory()
+    fetchStock()
   }, [])
 
-  // backendden güncel stok listesini çeker
-  function fetchInventory() {
-    fetch('http://localhost:8080/api/inventory')
+  function fetchStock() {
+    fetch('http://localhost:8080/api/material-stock')
       .then(response => response.json())
-      .then(data => setInventory(data))
+      .then(data => setStock(data))
   }
 
-  // kullanıcı bir input kutusuna yazı yazdığında çalışır, edits state'ini günceller
-  function handleInputChange(id, value) {
-    setEdits({ ...edits, [id]: value })
+  function handleAmountChange(materialId, value) {
+    setAmounts({ ...amounts, [materialId]: value })
   }
 
-  // "güncelle" butonuna basılınca çalışır, backend'e PUT isteği gönderir
-  function handleUpdate(id) {
-    const newQuantity = edits[id]
-    fetch(`http://localhost:8080/api/inventory/${id}`, {
-      method: 'PUT',
+  function handleAdjust(materialId, type) {
+    setErrorMessage('')
+    const quantity = amounts[materialId]
+
+    if (!quantity) {
+      setErrorMessage('Lütfen bir miktar girin')
+      return
+    }
+
+    fetch(`http://localhost:8080/api/material-stock/${materialId}/adjust`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity: newQuantity })
+      body: JSON.stringify({ quantity: quantity, type: type })
     })
       .then(response => response.json())
       .then(() => {
-        // güncelleme başarılı olunca listeyi baştan çekip ekranı tazele
-        fetchInventory()
+        setAmounts({ ...amounts, [materialId]: '' })
+        fetchStock()
       })
+      .catch(error => setErrorMessage('İşlem başarısız oldu'))
   }
 
   return (
     <div className="card">
-      <h2>Depo stok güncelleme</h2>
+      <h2>Depo stok yönetimi</h2>
+
+      {errorMessage && (
+        <div style={{ background: '#fff3e0', color: '#b45309', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+          ⚠️ {errorMessage}
+        </div>
+      )}
+
       <table border="1" cellPadding="8">
         <thead>
           <tr>
             <th>Malzeme</th>
-            <th>Mevcut stok</th>
-            <th>Yeni miktar</th>
-            <th></th>
+            <th>Mevcut Stok</th>
+            <th>Miktar</th>
+            <th>İşlem</th>
           </tr>
         </thead>
         <tbody>
-          {/* Her stok kaydı için bir satır oluştur */}
-          {inventory.map(item => (
-            <tr key={item.id}>
+          {stock.map(item => (
+            <tr key={item.material.id}>
               <td>{item.material.name}</td>
-              <td>{item.currentQuantity} {item.material.unit}</td>
+              <td>{item.balanceAfter} {item.material.unit}</td>
               <td>
                 <input
                   type="number"
-                  placeholder={item.currentQuantity}
-                  value={edits[item.id] ?? ''}
-                  onChange={(e) => handleInputChange(item.id, e.target.value)}
+                  placeholder="Miktar"
+                  value={amounts[item.material.id] || ''}
+                  onChange={(e) => handleAmountChange(item.material.id, e.target.value)}
                 />
               </td>
               <td>
-                <button onClick={() => handleUpdate(item.id)}>Güncelle</button>
+                <button onClick={() => handleAdjust(item.material.id, 'ADDITION')}>Ekle</button>
+                <button className="secondary" onClick={() => handleAdjust(item.material.id, 'REMOVAL')}>Çıkar</button>
               </td>
             </tr>
           ))}
