@@ -3,6 +3,7 @@ import './App.css'
 import LoginPage from './LoginPage'
 import InventoryPage from './InventoryPage'
 import SalesPage from './SalesPage'
+import ProductionPlanningPage from './ProductionPlanningPage'
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -32,7 +33,7 @@ function App() {
 
       {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
       {currentUser.role === 'SALES' && <SalesPage />}
-      {currentUser.role === 'PLANNER' && <p>Üretim planlama ekranı güncelleniyor...</p>}
+    {currentUser.role === 'PLANNER' && <ProductionPlanningPage />}
     </div>
   )
 }
