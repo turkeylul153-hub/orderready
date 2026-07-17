@@ -5,6 +5,8 @@ function ProductionPlanningPage() {
   const [expandedOrderId, setExpandedOrderId] = useState(null)
   const [feasibilityData, setFeasibilityData] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
+  const [searchText, setSearchText] = useState('')
 
   useEffect(() => {
     fetchOrders()
@@ -29,12 +31,8 @@ function ProductionPlanningPage() {
         }
         return response.json()
       })
-      .then(() => {
-        fetchOrders()
-      })
-      .catch(error => {
-        setErrorMessage(error.message)
-      })
+      .then(() => fetchOrders())
+      .catch(error => setErrorMessage(error.message))
   }
 
   function handleComplete(orderId) {
@@ -50,12 +48,8 @@ function ProductionPlanningPage() {
         }
         return response.json()
       })
-      .then(() => {
-        fetchOrders()
-      })
-      .catch(error => {
-        setErrorMessage(error.message)
-      })
+      .then(() => fetchOrders())
+      .catch(error => setErrorMessage(error.message))
   }
 
   function toggleDetails(order) {
@@ -77,17 +71,71 @@ function ProductionPlanningPage() {
       })
   }
 
-  const relevantOrders = orders.filter(order => order.status !== 'SHIPPED')
+  // sadece gönderilmemiş siparişleri al
+  const notShipped = orders.filter(order => order.status !== 'SHIPPED')
+
+  // özet sayıları hesapla (filtre/aramadan bağımsız, genel tablo)
+  const pendingCount = notShipped.filter(o => o.status === 'PENDING').length
+  const inProductionCount = notShipped.filter(o => o.status === 'IN_PRODUCTION').length
+  const completedCount = notShipped.filter(o => o.status === 'COMPLETED').length
+
+  // durum filtresini uygula
+  let filteredOrders = notShipped
+  if (statusFilter !== 'ALL') {
+    filteredOrders = filteredOrders.filter(order => order.status === statusFilter)
+  }
+
+  // arama filtresini uygula (müşteri adı veya ürün adında ara)
+  if (searchText.trim() !== '') {
+    const search = searchText.toLowerCase()
+    filteredOrders = filteredOrders.filter(order =>
+      order.customerName?.toLowerCase().includes(search) ||
+      order.product.name.toLowerCase().includes(search)
+    )
+  }
+
+  // Önceliğe göre sırala: URGENT önce, sonra NORMAL
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (a.priority === b.priority) return 0
+    return a.priority === 'URGENT' ? -1 : 1
+  })
 
   return (
     <div className="card">
       <h2>Üretim planlama</h2>
+
+      {/* Özet panel */}
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
+          <strong>{pendingCount}</strong> Bekleyen
+        </div>
+        <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
+          <strong>{inProductionCount}</strong> Üretimde
+        </div>
+        <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
+          <strong>{completedCount}</strong> Sevkiyat Bekliyor
+        </div>
+      </div>
 
       {errorMessage && (
         <div style={{ background: '#fff3e0', color: '#b45309', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' }}>
           ⚠️ {errorMessage}
         </div>
       )}
+
+      {/* Filtre ve arama */}
+      <div style={{ marginBottom: '1rem' }}>
+        <button className={statusFilter === 'ALL' ? '' : 'secondary'} onClick={() => setStatusFilter('ALL')}>Tümü</button>
+        <button className={statusFilter === 'PENDING' ? '' : 'secondary'} onClick={() => setStatusFilter('PENDING')}>Bekleyen</button>
+        <button className={statusFilter === 'IN_PRODUCTION' ? '' : 'secondary'} onClick={() => setStatusFilter('IN_PRODUCTION')}>Üretimde</button>
+        <button className={statusFilter === 'COMPLETED' ? '' : 'secondary'} onClick={() => setStatusFilter('COMPLETED')}>Sevkiyat Bekleyen</button>
+        <input
+          type="text"
+          placeholder="Müşteri veya ürün ara..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
 
       <table border="1" cellPadding="8">
         <thead>
@@ -101,7 +149,7 @@ function ProductionPlanningPage() {
           </tr>
         </thead>
         <tbody>
-          {relevantOrders.map(order => (
+          {sortedOrders.map(order => (
             <>
               <tr key={order.id}>
                 <td>{order.product.name}</td>
