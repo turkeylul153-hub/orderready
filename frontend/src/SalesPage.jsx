@@ -6,7 +6,9 @@ function SalesPage() {
   const [quantity, setQuantity] = useState('')
   const [customerName, setCustomerName] = useState('')
   const [priority, setPriority] = useState('NORMAL')
+  const [notes, setNotes] = useState('')
   const [orders, setOrders] = useState([])
+  const [feasibility, setFeasibility] = useState(null)
 
   useEffect(() => {
     fetch('http://localhost:8080/api/products')
@@ -15,6 +17,21 @@ function SalesPage() {
 
     fetchOrders()
   }, [])
+
+  // ürün veya miktar değiştikçe, otomatik olarak uygunluk kontrolü yap
+  useEffect(() => {
+    if (selectedProductId && quantity) {
+      fetch('http://localhost:8080/api/feasibility/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: selectedProductId, quantityKg: quantity })
+      })
+        .then(response => response.json())
+        .then(data => setFeasibility(data))
+    } else {
+      setFeasibility(null)
+    }
+  }, [selectedProductId, quantity])
 
   function fetchOrders() {
     fetch('http://localhost:8080/api/orders')
@@ -30,7 +47,8 @@ function SalesPage() {
         product: { id: selectedProductId },
         quantityKg: quantity,
         customerName: customerName,
-        priority: priority
+        priority: priority,
+        notes: notes
       })
     })
       .then(response => response.json())
@@ -39,6 +57,8 @@ function SalesPage() {
         setQuantity('')
         setCustomerName('')
         setPriority('NORMAL')
+        setNotes('')
+        setFeasibility(null)
         fetchOrders()
       })
   }
@@ -72,6 +92,23 @@ function SalesPage() {
         <option value="NORMAL">Normal</option>
         <option value="URGENT">Acil</option>
       </select>
+
+      <input
+        type="text"
+        placeholder="Not (opsiyonel)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+      />
+
+      {/* Otomatik uygunluk özeti */}
+      {feasibility && (
+        <div style={{ margin: '1rem 0', padding: '0.75rem', borderRadius: '8px', background: feasibility.hasShortfall ? '#fff3e0' : '#e8f5e9' }}>
+          {feasibility.hasShortfall
+            ? `⚠️ Bazı malzemeler eksik — Tahmini teslim: ${feasibility.deliveryEstimateText}`
+            : `✅ Stok yeterli — Tahmini teslim: ${feasibility.deliveryEstimateText}`
+          }
+        </div>
+      )}
 
       <button onClick={handleCreateOrder}>Sipariş Oluştur</button>
 
