@@ -5,7 +5,7 @@ import com.orderready.backend.repository.OrderRepository;
 import com.orderready.backend.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import com.orderready.backend.dto.PinRequest;
 import java.util.List;
 
 @RestController
@@ -47,5 +47,16 @@ public class OrderController {
     @PutMapping("/{id}/ship")
     public Order shipOrder(@PathVariable Long id) {
         return orderService.shipOrder(id);
+    }
+    // PUT /api/orders/{id}/revert-production - üretimi geri alır, hammaddeyi geri ekler
+    @PutMapping("/{id}/revert-production")
+    public Order revertProduction(@PathVariable Long id, @RequestBody PinRequest request) {
+        return orderService.revertProduction(id, request.getPin());
+    }
+
+    // PUT /api/orders/{id}/revert-shipment - sevkiyatı geri alır, ürünü depoya geri ekler
+    @PutMapping("/{id}/revert-shipment")
+    public Order revertShipment(@PathVariable Long id, @RequestBody PinRequest request) {
+        return orderService.revertShipment(id, request.getPin());
     }
 }
