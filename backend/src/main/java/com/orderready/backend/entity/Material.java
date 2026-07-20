@@ -8,6 +8,9 @@ import java.math.BigDecimal;
 @Table(name = "materials")
 public class Material {
 
+    private String description;
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,6 +29,9 @@ public class Material {
     // bu seviyenin altına düşünce depo çalışanına uyarı gösterilecek
     @Column(name = "low_stock_threshold")
     private BigDecimal lowStockThreshold;
+
+    public String getDescription()  {return description; }
+    public void setDescription( String description) {this.description = description;}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

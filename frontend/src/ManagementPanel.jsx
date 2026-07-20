@@ -20,6 +20,8 @@ function ManagementPanel() {
 
   const [message, setMessage] = useState('')
 
+  const [materialDescription, setMaterialDescription] = useState('')
+
   useEffect(() => {
     if (isOpen) {
       fetchMaterials()
@@ -43,13 +45,17 @@ function ManagementPanel() {
     fetch('http://localhost:8080/api/materials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: materialName, type: materialType, unit: materialUnit })
+      body: JSON.stringify({ name: materialName, type: materialType, unit: materialUnit , description: materialDescription})
+
     })
       .then(response => response.json())
       .then(() => {
         setMaterialName('')
         setMessage('Malzeme eklendi: ' + materialName)
         fetchMaterials()
+
+        setMaterialDescription('')
+
       })
   }
 
@@ -106,7 +112,8 @@ function ManagementPanel() {
             <option value="PACKAGING">Ambalaj</option>
           </select>
           <input type="text" placeholder="Birim (kg, adet)" value={materialUnit} onChange={(e) => setMaterialUnit(e.target.value)} />
-          <button onClick={handleAddMaterial}>Ekle</button>
+          <input type="text" placeholder="Açıklama" value={materialDescription} onChange={(e) => setMaterialDescription(e.target.value)} />
+           <button onClick={handleAddMaterial}>Ekle</button>
 
           <h3>Yeni Tedarikçi Ekle</h3>
           <input type="text" placeholder="İsim" value={supplierName} onChange={(e) => setSupplierName(e.target.value)} />
