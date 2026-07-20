@@ -116,13 +116,14 @@ function SalesPage() {
       <h3>Siparişlerim</h3>
       <table border="1" cellPadding="8">
         <thead>
-          <tr>
-            <th>Ürün</th>
-            <th>Miktar</th>
-            <th>Müşteri</th>
-            <th>Öncelik</th>
-            <th>Durum</th>
-          </tr>
+         <tr>
+           <th>Ürün</th>
+           <th>Miktar</th>
+           <th>Müşteri</th>
+           <th>Öncelik</th>
+           <th>Durum</th>
+           <th>Not</th>
+         </tr>
         </thead>
         <tbody>
           {orders.map(order => (
@@ -132,6 +133,7 @@ function SalesPage() {
               <td>{order.customerName}</td>
               <td>{order.priority}</td>
               <td>{order.status}</td>
+              <td>{order.notes || '-'}</td>
             </tr>
           ))}
         </tbody>
