@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import ManagementPanel from './ManagementPanel'
+
 function ProductionPlanningPage() {
   const [orders, setOrders] = useState([])
   const [expandedOrderId, setExpandedOrderId] = useState(null)
@@ -143,6 +143,7 @@ function ProductionPlanningPage() {
             <th>Miktar</th>
             <th>Müşteri</th>
             <th>Öncelik</th>
+            <th>Not</th>
             <th>Durum</th>
             <th>İşlem</th>
           </tr>
@@ -155,6 +156,7 @@ function ProductionPlanningPage() {
                 <td>{order.quantityKg} kg</td>
                 <td>{order.customerName}</td>
                 <td>{order.priority}</td>
+                <td>{order.notes || '-'}</td>
                 <td>{order.status}</td>
                 <td>
                   <button onClick={() => toggleDetails(order)}>
@@ -174,7 +176,7 @@ function ProductionPlanningPage() {
 
               {expandedOrderId === order.id && feasibilityData && (
                 <tr>
-                  <td colSpan="6">
+                  <td colSpan="7">
                     <div className="order-detail-panel">
                       <p>Üretim süresi: {feasibilityData.productionTimeHours} saat</p>
                       <p>Tahmini teslim: {feasibilityData.deliveryEstimateText}</p>
@@ -213,10 +215,8 @@ function ProductionPlanningPage() {
           ))}
         </tbody>
       </table>
-      <ManagementPanel />
     </div>
   )
 }
 
 export default ProductionPlanningPage
-
