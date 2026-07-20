@@ -230,3 +230,6 @@ INSERT INTO supplier_materials (supplier_id, material_id) VALUES
 (3, 4);
 
 ALTER TABLE orders ADD COLUMN notes TEXT;
+
+-- malzemelere açıklama alanı eklendi
+ALTER TABLE materials ADD COLUMN description VARCHAR(300);
