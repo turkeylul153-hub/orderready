@@ -6,6 +6,10 @@ function InventoryPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [pendingShipments, setPendingShipments] = useState([])
   const [shippedOrders, setShippedOrders] = useState([])
+  const [history, setHistory] = useState([])
+
+  const [showShippedHistory, setShowShippedHistory] = useState(false)
+  const [showStockHistory, setShowStockHistory] = useState(false)
 
   useEffect(() => {
     fetchStock()
@@ -25,6 +29,19 @@ function InventoryPage() {
         setPendingShipments(data.filter(order => order.status === 'COMPLETED'))
         setShippedOrders(data.filter(order => order.status === 'SHIPPED'))
       })
+  }
+
+  function fetchHistory() {
+    fetch('http://localhost:8080/api/material-stock/history')
+      .then(response => response.json())
+      .then(data => setHistory(data))
+  }
+
+  function toggleStockHistory() {
+    if (!showStockHistory) {
+      fetchHistory()
+    }
+    setShowStockHistory(!showStockHistory)
   }
 
   function handleAmountChange(materialId, value) {
@@ -139,30 +156,69 @@ function InventoryPage() {
         </table>
       </div>
 
-      {/* Geçmiş - gönderilmiş siparişler, kayıt olarak görünmeye devam eder */}
+      {/* Stok hareketleri geçmişi - katlanabilir */}
       <div className="card">
-        <h2>Gönderilmiş siparişler (geçmiş)</h2>
-        {shippedOrders.length === 0 ? (
-          <p>Henüz gönderilmiş sipariş yok.</p>
-        ) : (
-          <table border="1" cellPadding="8">
-            <thead>
-              <tr>
-                <th>Ürün</th>
-                <th>Miktar</th>
-                <th>Müşteri</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shippedOrders.map(order => (
-                <tr key={order.id}>
-                  <td>{order.product.name}</td>
-                  <td>{order.quantityKg} kg</td>
-                  <td>{order.customerName}</td>
+        <h2 onClick={toggleStockHistory} style={{ cursor: 'pointer' }}>
+          Stok Hareketleri Geçmişi {showStockHistory ? '▲' : '▼'}
+        </h2>
+        {showStockHistory && (
+          history.length === 0 ? (
+            <p>Henüz stok hareketi yok.</p>
+          ) : (
+            <table border="1" cellPadding="8">
+              <thead>
+                <tr>
+                  <th>Malzeme</th>
+                  <th>Değişim</th>
+                  <th>Yeni Bakiye</th>
+                  <th>Tür</th>
+                  <th>Tarih</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {history.map(tx => (
+                  <tr key={tx.id}>
+                    <td>{tx.material.name}</td>
+                    <td>{tx.quantityChange > 0 ? '+' : ''}{tx.quantityChange} {tx.material.unit}</td>
+                    <td>{tx.balanceAfter} {tx.material.unit}</td>
+                    <td>{tx.type}</td>
+                    <td>{tx.createdAt}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
+      </div>
+
+      {/* Gönderilmiş siparişler - katlanabilir */}
+      <div className="card">
+        <h2 onClick={() => setShowShippedHistory(!showShippedHistory)} style={{ cursor: 'pointer' }}>
+          Gönderilmiş Siparişler (Geçmiş) {showShippedHistory ? '▲' : '▼'}
+        </h2>
+        {showShippedHistory && (
+          shippedOrders.length === 0 ? (
+            <p>Henüz gönderilmiş sipariş yok.</p>
+          ) : (
+            <table border="1" cellPadding="8">
+              <thead>
+                <tr>
+                  <th>Ürün</th>
+                  <th>Miktar</th>
+                  <th>Müşteri</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shippedOrders.map(order => (
+                  <tr key={order.id}>
+                    <td>{order.product.name}</td>
+                    <td>{order.quantityKg} kg</td>
+                    <td>{order.customerName}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
         )}
       </div>
     </div>
