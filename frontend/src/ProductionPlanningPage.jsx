@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-
+import ManagementPanel from './ManagementPanel'
 function ProductionPlanningPage() {
   const [orders, setOrders] = useState([])
   const [expandedOrderId, setExpandedOrderId] = useState(null)
@@ -213,8 +213,10 @@ function ProductionPlanningPage() {
           ))}
         </tbody>
       </table>
+      <ManagementPanel />
     </div>
   )
 }
 
 export default ProductionPlanningPage
+
