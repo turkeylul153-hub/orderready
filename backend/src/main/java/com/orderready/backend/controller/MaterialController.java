@@ -10,7 +10,7 @@ import java.util.List;
 // Material yönetimi için REST endpoint'lerini sunar
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
-@RequestMapping("/api/materials") // url belirler
+@RequestMapping("/api/materials")
 public class MaterialController {
 
     @Autowired
@@ -20,5 +20,11 @@ public class MaterialController {
     @GetMapping
     public List<Material> getAllMaterials() {
         return materialRepository.findAll();
+    }
+
+    // POST /api/materials - yeni malzeme oluşturur
+    @PostMapping
+    public Material createMaterial(@RequestBody Material material) {
+        return materialRepository.save(material);
     }
 }
