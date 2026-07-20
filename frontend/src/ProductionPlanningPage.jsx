@@ -19,6 +19,9 @@ function ProductionPlanningPage() {
   }
 
   function handleStartProduction(orderId) {
+    const confirmed = window.confirm('Bu siparişin üretimine başlamak istediğinize emin misiniz?')
+    if (!confirmed) return
+
     setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/start-production`, {
       method: 'PUT'
@@ -36,6 +39,9 @@ function ProductionPlanningPage() {
   }
 
   function handleComplete(orderId) {
+    const confirmed = window.confirm('Bu siparişin üretimini tamamlandı olarak işaretlemek istediğinize emin misiniz?')
+    if (!confirmed) return
+
     setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/complete`, {
       method: 'PUT'
@@ -71,21 +77,17 @@ function ProductionPlanningPage() {
       })
   }
 
-  // sadece gönderilmemiş siparişleri al
   const notShipped = orders.filter(order => order.status !== 'SHIPPED')
 
-  // özet sayıları hesapla (filtre/aramadan bağımsız, genel tablo)
   const pendingCount = notShipped.filter(o => o.status === 'PENDING').length
   const inProductionCount = notShipped.filter(o => o.status === 'IN_PRODUCTION').length
   const completedCount = notShipped.filter(o => o.status === 'COMPLETED').length
 
-  // durum filtresini uygula
   let filteredOrders = notShipped
   if (statusFilter !== 'ALL') {
     filteredOrders = filteredOrders.filter(order => order.status === statusFilter)
   }
 
-  // arama filtresini uygula (müşteri adı veya ürün adında ara)
   if (searchText.trim() !== '') {
     const search = searchText.toLowerCase()
     filteredOrders = filteredOrders.filter(order =>
@@ -94,7 +96,6 @@ function ProductionPlanningPage() {
     )
   }
 
-  // Önceliğe göre sırala: URGENT önce, sonra NORMAL
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     if (a.priority === b.priority) return 0
     return a.priority === 'URGENT' ? -1 : 1
@@ -104,7 +105,6 @@ function ProductionPlanningPage() {
     <div className="card">
       <h2>Üretim planlama</h2>
 
-      {/* Özet panel */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
         <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
           <strong>{pendingCount}</strong> Bekleyen
@@ -123,7 +123,6 @@ function ProductionPlanningPage() {
         </div>
       )}
 
-      {/* Filtre ve arama */}
       <div style={{ marginBottom: '1rem' }}>
         <button className={statusFilter === 'ALL' ? '' : 'secondary'} onClick={() => setStatusFilter('ALL')}>Tümü</button>
         <button className={statusFilter === 'PENDING' ? '' : 'secondary'} onClick={() => setStatusFilter('PENDING')}>Bekleyen</button>

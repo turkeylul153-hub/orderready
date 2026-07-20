@@ -18,7 +18,6 @@ function SalesPage() {
     fetchOrders()
   }, [])
 
-  // ürün veya miktar değiştikçe, otomatik olarak uygunluk kontrolü yap
   useEffect(() => {
     if (selectedProductId && quantity) {
       fetch('http://localhost:8080/api/feasibility/check', {
@@ -40,6 +39,9 @@ function SalesPage() {
   }
 
   function handleCreateOrder() {
+    const confirmed = window.confirm('Bu siparişi oluşturmak istediğinize emin misiniz?')
+    if (!confirmed) return
+
     fetch('http://localhost:8080/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -100,7 +102,6 @@ function SalesPage() {
         onChange={(e) => setNotes(e.target.value)}
       />
 
-      {/* Otomatik uygunluk özeti */}
       {feasibility && (
         <div style={{ margin: '1rem 0', padding: '0.75rem', borderRadius: '8px', background: feasibility.hasShortfall ? '#fff3e0' : '#e8f5e9' }}>
           {feasibility.hasShortfall
