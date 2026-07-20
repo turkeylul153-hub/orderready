@@ -35,7 +35,11 @@ public class MaterialStockController {
                 .filter(tx -> tx != null)
                 .toList();
     }
-
+    // GET /api/material-stock/history - tüm stok hareketlerinin geçmişini döndürür
+    @GetMapping("/history")
+    public List<MaterialStockTransaction> getHistory() {
+        return transactionRepository.findAllByOrderByCreatedAtDesc();
+    }
     // POST /api/material-stock/{materialId}/adjust - elle stok ekleme/çıkarma
     @PostMapping("/{materialId}/adjust")
     public MaterialStockTransaction adjustStock(@PathVariable Long materialId, @RequestBody StockAdjustmentRequest request) {
