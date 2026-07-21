@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react'
 
+function statusClass(status) {
+  return 'status-badge status-' + status.toLowerCase()
+}
+
+function priorityClass(priority) {
+  return 'priority-badge priority-' + priority.toLowerCase()
+}
+
 function SalesPage() {
   const [products, setProducts] = useState([])
   const [selectedProductId, setSelectedProductId] = useState('')
@@ -114,30 +122,34 @@ function SalesPage() {
       <button onClick={handleCreateOrder}>Sipariş Oluştur</button>
 
       <h3>Siparişlerim</h3>
-      <table border="1" cellPadding="8">
-        <thead>
-         <tr>
-           <th>Ürün</th>
-           <th>Miktar</th>
-           <th>Müşteri</th>
-           <th>Öncelik</th>
-           <th>Durum</th>
-           <th>Not</th>
-         </tr>
-        </thead>
-        <tbody>
-          {orders.map(order => (
-            <tr key={order.id}>
-              <td>{order.product.name}</td>
-              <td>{order.quantityKg} kg</td>
-              <td>{order.customerName}</td>
-              <td>{order.priority}</td>
-              <td>{order.status}</td>
-              <td>{order.notes || '-'}</td>
+      {orders.length === 0 ? (
+        <div className="empty-state">📋 Henüz sipariş oluşturmadınız.</div>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Ürün</th>
+              <th>Miktar</th>
+              <th>Müşteri</th>
+              <th>Öncelik</th>
+              <th>Not</th>
+              <th>Durum</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {orders.map(order => (
+              <tr key={order.id}>
+                <td>{order.product.name}</td>
+                <td>{order.quantityKg} kg</td>
+                <td>{order.customerName}</td>
+                <td><span className={priorityClass(order.priority)}>{order.priority}</span></td>
+                <td>{order.notes || '-'}</td>
+                <td><span className={statusClass(order.status)}>{order.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   )
 }

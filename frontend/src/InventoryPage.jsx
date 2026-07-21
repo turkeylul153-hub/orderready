@@ -105,7 +105,6 @@ function InventoryPage() {
       .catch(error => alert(error.message))
   }
 
-  // Stok hareketleri geçmişini, seçilen filtrelere göre daraltır
   let filteredHistory = history
 
   if (historyTypeFilter !== 'ALL') {
@@ -122,9 +121,9 @@ function InventoryPage() {
       <div className="card">
         <h2>Sevkiyat bekleyen siparişler</h2>
         {pendingShipments.length === 0 ? (
-          <p>Şu an sevkiyat bekleyen sipariş yok.</p>
+          <div className="empty-state">📦 Şu an sevkiyat bekleyen sipariş yok.</div>
         ) : (
-          <table border="1" cellPadding="8">
+          <table>
             <thead>
               <tr>
                 <th>Ürün</th>
@@ -158,7 +157,7 @@ function InventoryPage() {
           </div>
         )}
 
-        <table border="1" cellPadding="8">
+        <table>
           <thead>
             <tr>
               <th>Malzeme</th>
@@ -214,9 +213,9 @@ function InventoryPage() {
             </div>
 
             {filteredHistory.length === 0 ? (
-              <p>Kayıt bulunamadı.</p>
+              <div className="empty-state">📜 Kayıt bulunamadı.</div>
             ) : (
-              <table border="1" cellPadding="8">
+              <table>
                 <thead>
                   <tr>
                     <th>Malzeme</th>
@@ -249,9 +248,9 @@ function InventoryPage() {
         </h2>
         {showShippedHistory && (
           shippedOrders.length === 0 ? (
-            <p>Henüz gönderilmiş sipariş yok.</p>
+            <div className="empty-state">📦 Henüz gönderilmiş sipariş yok.</div>
           ) : (
-            <table border="1" cellPadding="8">
+            <table>
               <thead>
                 <tr>
                   <th>Ürün</th>

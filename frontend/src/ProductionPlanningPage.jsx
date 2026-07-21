@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react'
 import ManagementPanel from './ManagementPanel'
 
+function statusClass(status) {
+  return 'status-badge status-' + status.toLowerCase()
+}
+
+function priorityClass(priority) {
+  return 'priority-badge priority-' + priority.toLowerCase()
+}
+
 function ProductionPlanningPage() {
   const [orders, setOrders] = useState([])
   const [expandedOrderId, setExpandedOrderId] = useState(null)
@@ -80,43 +88,45 @@ function ProductionPlanningPage() {
       .then(() => fetchOrders())
       .catch(error => setErrorMessage(error.message))
   }
-function handleDeleteOrder(orderId) {
-  const confirmed = window.confirm('Bu siparişi tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')
-  if (!confirmed) return
 
-  setErrorMessage('')
-  fetch(`http://localhost:8080/api/orders/${orderId}`, {
-    method: 'DELETE'
-  })
-    .then(response => {
-      if (!response.ok) {
-        return response.json().then(data => {
-          throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
-        })
-      }
-      fetchOrders()
-    })
-    .catch(error => setErrorMessage(error.message))
-}
-function handleCancelOrder(orderId) {
-  const confirmed = window.confirm('Bu siparişi iptal etmek istediğinize emin misiniz?')
-  if (!confirmed) return
+  function handleDeleteOrder(orderId) {
+    const confirmed = window.confirm('Bu siparişi tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')
+    if (!confirmed) return
 
-  setErrorMessage('')
-  fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
-    method: 'PUT'
-  })
-    .then(response => {
-      if (!response.ok) {
-        return response.json().then(data => {
-          throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
-        })
-      }
-      return response.json()
+    setErrorMessage('')
+    fetch(`http://localhost:8080/api/orders/${orderId}`, {
+      method: 'DELETE'
     })
-    .then(() => fetchOrders())
-    .catch(error => setErrorMessage(error.message))
-}
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+          })
+        }
+        fetchOrders()
+      })
+      .catch(error => setErrorMessage(error.message))
+  }
+
+  function handleCancelOrder(orderId) {
+    const confirmed = window.confirm('Bu siparişi iptal etmek istediğinize emin misiniz?')
+    if (!confirmed) return
+
+    setErrorMessage('')
+    fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
+      method: 'PUT'
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+          })
+        }
+        return response.json()
+      })
+      .then(() => fetchOrders())
+      .catch(error => setErrorMessage(error.message))
+  }
 
   function toggleDetails(order) {
     if (expandedOrderId === order.id) {
@@ -137,7 +147,7 @@ function handleCancelOrder(orderId) {
       })
   }
 
-const notShipped = orders.filter(order => order.status !== 'SHIPPED' && order.status !== 'CANCELLED')
+  const notShipped = orders.filter(order => order.status !== 'SHIPPED' && order.status !== 'CANCELLED')
 
   const pendingCount = notShipped.filter(o => o.status === 'PENDING').length
   const inProductionCount = notShipped.filter(o => o.status === 'IN_PRODUCTION').length
@@ -167,13 +177,13 @@ const notShipped = orders.filter(order => order.status !== 'SHIPPED' && order.st
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
         <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
-          <strong>{pendingCount}</strong> Bekleyen
+          ⏳ <strong>{pendingCount}</strong> Bekleyen
         </div>
         <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
-          <strong>{inProductionCount}</strong> Üretimde
+          🏭 <strong>{inProductionCount}</strong> Üretimde
         </div>
         <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
-          <strong>{completedCount}</strong> Sevkiyat Bekliyor
+          📦 <strong>{completedCount}</strong> Sevkiyat Bekliyor
         </div>
       </div>
 
@@ -196,92 +206,96 @@ const notShipped = orders.filter(order => order.status !== 'SHIPPED' && order.st
         />
       </div>
 
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>Ürün</th>
-            <th>Miktar</th>
-            <th>Müşteri</th>
-            <th>Öncelik</th>
-            <th>Not</th>
-            <th>Durum</th>
-            <th>İşlem</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedOrders.map(order => (
-            <>
-              <tr key={order.id}>
-                <td>{order.product.name}</td>
-                <td>{order.quantityKg} kg</td>
-                <td>{order.customerName}</td>
-                <td>{order.priority}</td>
-                <td>{order.notes || '-'}</td>
-                <td>{order.status}</td>
-                <td>
-                  <button onClick={() => toggleDetails(order)}>
-                    {expandedOrderId === order.id ? 'Detayı Gizle' : 'Detay Göster'}
-                  </button>
-                  {order.status === 'PENDING' && (
-                    <>
-                      <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
-                      <button className="secondary" onClick={() => handleDeleteOrder(order.id)}>Sil</button>
-                      <button className="secondary" onClick={() => handleCancelOrder(order.id)}>İptal Et</button>
-                    </>
-                  )}
-                  {order.status === 'IN_PRODUCTION' && (
-                    <>
-                      <button onClick={() => handleComplete(order.id)}>Tamamlandı</button>
-                      <button className="secondary" onClick={() => handleRevertProduction(order.id)}>Geri Al</button>
-                    </>
-                  )}
-                  {order.status === 'COMPLETED' && (
-                    <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Depoda sevkiyat bekliyor</div>
-                  )}
-                </td>
-              </tr>
-
-              {expandedOrderId === order.id && feasibilityData && (
-                <tr>
-                  <td colSpan="7">
-                    <div className="order-detail-panel">
-                      <p>Üretim süresi: {feasibilityData.productionTimeHours} saat</p>
-                      <p>Tahmini teslim: {feasibilityData.deliveryEstimateText}</p>
-
-                      {feasibilityData.materialShortfalls.length > 0 ? (
-                        <table border="1" cellPadding="6">
-                          <thead>
-                            <tr>
-                              <th>Malzeme</th>
-                              <th>Gereken</th>
-                              <th>Fabrikada</th>
-                              <th>Eksik</th>
-                              <th>Tedarikçi</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {feasibilityData.materialShortfalls.map((item, index) => (
-                              <tr key={index}>
-                                <td>{item.materialName}</td>
-                                <td>{item.requiredQuantity} {item.unit}</td>
-                                <td>{item.factoryStock} {item.unit}</td>
-                                <td>{item.shortfall} {item.unit}</td>
-                                <td>{item.supplierName}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p>✅ Tüm malzemeler yeterli</p>
-                      )}
-                    </div>
+      {sortedOrders.length === 0 ? (
+        <div className="empty-state">📋 Gösterilecek sipariş yok.</div>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Ürün</th>
+              <th>Miktar</th>
+              <th>Müşteri</th>
+              <th>Öncelik</th>
+              <th>Not</th>
+              <th>Durum</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedOrders.map(order => (
+              <>
+                <tr key={order.id}>
+                  <td>{order.product.name}</td>
+                  <td>{order.quantityKg} kg</td>
+                  <td>{order.customerName}</td>
+                  <td><span className={priorityClass(order.priority)}>{order.priority}</span></td>
+                  <td>{order.notes || '-'}</td>
+                  <td><span className={statusClass(order.status)}>{order.status}</span></td>
+                  <td>
+                    <button onClick={() => toggleDetails(order)}>
+                      {expandedOrderId === order.id ? 'Detayı Gizle' : 'Detay Göster'}
+                    </button>
+                    {order.status === 'PENDING' && (
+                      <>
+                        <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
+                        <button className="danger" onClick={() => handleDeleteOrder(order.id)}>Sil</button>
+                        <button className="danger" onClick={() => handleCancelOrder(order.id)}>İptal Et</button>
+                      </>
+                    )}
+                    {order.status === 'IN_PRODUCTION' && (
+                      <>
+                        <button onClick={() => handleComplete(order.id)}>Tamamlandı</button>
+                        <button className="secondary" onClick={() => handleRevertProduction(order.id)}>Geri Al</button>
+                      </>
+                    )}
+                    {order.status === 'COMPLETED' && (
+                      <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Depoda sevkiyat bekliyor</div>
+                    )}
                   </td>
                 </tr>
-              )}
-            </>
-          ))}
-        </tbody>
-      </table>
+
+                {expandedOrderId === order.id && feasibilityData && (
+                  <tr>
+                    <td colSpan="7">
+                      <div className="order-detail-panel">
+                        <p>Üretim süresi: {feasibilityData.productionTimeHours} saat</p>
+                        <p>Tahmini teslim: {feasibilityData.deliveryEstimateText}</p>
+
+                        {feasibilityData.materialShortfalls.length > 0 ? (
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Malzeme</th>
+                                <th>Gereken</th>
+                                <th>Fabrikada</th>
+                                <th>Eksik</th>
+                                <th>Tedarikçi</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {feasibilityData.materialShortfalls.map((item, index) => (
+                                <tr key={index}>
+                                  <td>{item.materialName}</td>
+                                  <td>{item.requiredQuantity} {item.unit}</td>
+                                  <td>{item.factoryStock} {item.unit}</td>
+                                  <td>{item.shortfall} {item.unit}</td>
+                                  <td>{item.supplierName}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p>✅ Tüm malzemeler yeterli</p>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <ManagementPanel />
     </div>
