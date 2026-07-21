@@ -208,4 +208,12 @@ public class OrderService {
         order.setStatus("SHIPPED");
         return orderRepository.save(order);
     }
+    // Siparişi iptal eder (silmez, sadece durumu değiştirir - geçmiş korunur)
+    public Order cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı"));
+
+        order.setStatus("CANCELLED");
+        return orderRepository.save(order);
+    }
 }

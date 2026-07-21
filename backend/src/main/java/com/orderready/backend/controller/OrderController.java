@@ -53,7 +53,11 @@ public class OrderController {
 
         orderRepository.deleteById(id);
     }
-
+    // PUT /api/orders/{id}/cancel - siparişi iptal eder (silmez, durumu değiştirir)
+    @PutMapping("/{id}/cancel")
+    public Order cancelOrder(@PathVariable Long id) {
+        return orderService.cancelOrder(id);
+    }
     // PUT /api/orders/{id}/start-production - üretime başlatır, hammaddeyi düşer
     @PutMapping("/{id}/start-production")
     public Order startProduction(@PathVariable Long id) {
