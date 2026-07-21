@@ -7,7 +7,8 @@ function InventoryPage() {
   const [pendingShipments, setPendingShipments] = useState([])
   const [shippedOrders, setShippedOrders] = useState([])
   const [history, setHistory] = useState([])
-
+  const [historyMaterialFilter, setHistoryMaterialFilter] = useState('')
+  const [historyTypeFilter, setHistoryTypeFilter] = useState('ALL')
   const [showShippedHistory, setShowShippedHistory] = useState(false)
   const [showStockHistory, setShowStockHistory] = useState(false)
 
@@ -104,6 +105,18 @@ function InventoryPage() {
       .catch(error => alert(error.message))
   }
 
+  // Stok hareketleri geçmişini, seçilen filtrelere göre daraltır
+  let filteredHistory = history
+
+  if (historyTypeFilter !== 'ALL') {
+    filteredHistory = filteredHistory.filter(tx => tx.type === historyTypeFilter)
+  }
+
+  if (historyMaterialFilter.trim() !== '') {
+    const search = historyMaterialFilter.toLowerCase()
+    filteredHistory = filteredHistory.filter(tx => tx.material.name.toLowerCase().includes(search))
+  }
+
   return (
     <div>
       <div className="card">
@@ -182,32 +195,51 @@ function InventoryPage() {
           Stok Hareketleri Geçmişi {showStockHistory ? '▲' : '▼'}
         </h2>
         {showStockHistory && (
-          history.length === 0 ? (
-            <p>Henüz stok hareketi yok.</p>
-          ) : (
-            <table border="1" cellPadding="8">
-              <thead>
-                <tr>
-                  <th>Malzeme</th>
-                  <th>Değişim</th>
-                  <th>Yeni Bakiye</th>
-                  <th>Tür</th>
-                  <th>Tarih</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map(tx => (
-                  <tr key={tx.id}>
-                    <td>{tx.material.name}</td>
-                    <td>{tx.quantityChange > 0 ? '+' : ''}{tx.quantityChange} {tx.material.unit}</td>
-                    <td>{tx.balanceAfter} {tx.material.unit}</td>
-                    <td>{tx.type}</td>
-                    <td>{tx.createdAt}</td>
+          <div>
+            <div style={{ marginBottom: '1rem' }}>
+              <input
+                type="text"
+                placeholder="Malzeme ara..."
+                value={historyMaterialFilter}
+                onChange={(e) => setHistoryMaterialFilter(e.target.value)}
+              />
+              <select value={historyTypeFilter} onChange={(e) => setHistoryTypeFilter(e.target.value)}>
+                <option value="ALL">Tüm türler</option>
+                <option value="INITIAL">Başlangıç</option>
+                <option value="ADDITION">Ekleme</option>
+                <option value="REMOVAL">Çıkarma</option>
+                <option value="ORDER_CONSUMPTION">Sipariş Tüketimi</option>
+                <option value="ORDER_REVERSAL">Geri Alma</option>
+              </select>
+            </div>
+
+            {filteredHistory.length === 0 ? (
+              <p>Kayıt bulunamadı.</p>
+            ) : (
+              <table border="1" cellPadding="8">
+                <thead>
+                  <tr>
+                    <th>Malzeme</th>
+                    <th>Değişim</th>
+                    <th>Yeni Bakiye</th>
+                    <th>Tür</th>
+                    <th>Tarih</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )
+                </thead>
+                <tbody>
+                  {filteredHistory.map(tx => (
+                    <tr key={tx.id}>
+                      <td>{tx.material.name}</td>
+                      <td>{tx.quantityChange > 0 ? '+' : ''}{tx.quantityChange} {tx.material.unit}</td>
+                      <td>{tx.balanceAfter} {tx.material.unit}</td>
+                      <td>{tx.type}</td>
+                      <td>{tx.createdAt}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         )}
       </div>
 
