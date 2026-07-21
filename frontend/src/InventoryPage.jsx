@@ -83,6 +83,27 @@ function InventoryPage() {
       .then(() => fetchOrders())
   }
 
+  function handleRevertShipment(order) {
+    const pin = window.prompt('Bu gönderimi geri almak için yetkili PIN kodunu girin:')
+    if (!pin) return
+
+    fetch(`http://localhost:8080/api/orders/${order.id}/revert-shipment`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: pin })
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+          })
+        }
+        return response.json()
+      })
+      .then(() => fetchOrders())
+      .catch(error => alert(error.message))
+  }
+
   return (
     <div>
       <div className="card">
@@ -156,7 +177,6 @@ function InventoryPage() {
         </table>
       </div>
 
-      {/* Stok hareketleri geçmişi - katlanabilir */}
       <div className="card">
         <h2 onClick={toggleStockHistory} style={{ cursor: 'pointer' }}>
           Stok Hareketleri Geçmişi {showStockHistory ? '▲' : '▼'}
@@ -191,7 +211,6 @@ function InventoryPage() {
         )}
       </div>
 
-      {/* Gönderilmiş siparişler - katlanabilir */}
       <div className="card">
         <h2 onClick={() => setShowShippedHistory(!showShippedHistory)} style={{ cursor: 'pointer' }}>
           Gönderilmiş Siparişler (Geçmiş) {showShippedHistory ? '▲' : '▼'}
@@ -206,6 +225,7 @@ function InventoryPage() {
                   <th>Ürün</th>
                   <th>Miktar</th>
                   <th>Müşteri</th>
+                  <th>İşlem</th>
                 </tr>
               </thead>
               <tbody>
@@ -214,6 +234,9 @@ function InventoryPage() {
                     <td>{order.product.name}</td>
                     <td>{order.quantityKg} kg</td>
                     <td>{order.customerName}</td>
+                    <td>
+                      <button className="secondary" onClick={() => handleRevertShipment(order)}>Geri Al</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
