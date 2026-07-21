@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.orderready.backend.dto.PinRequest;
 import java.util.List;
+import com.orderready.backend.dto.CancelRequest;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -55,9 +56,10 @@ public class OrderController {
     }
     // PUT /api/orders/{id}/cancel - siparişi iptal eder (silmez, durumu değiştirir)
     @PutMapping("/{id}/cancel")
-    public Order cancelOrder(@PathVariable Long id) {
-        return orderService.cancelOrder(id);
+    public Order cancelOrder(@PathVariable Long id, @RequestBody CancelRequest request) {
+        return orderService.cancelOrder(id, request.getPin(), request.getReason());
     }
+
     // PUT /api/orders/{id}/start-production - üretime başlatır, hammaddeyi düşer
     @PutMapping("/{id}/start-production")
     public Order startProduction(@PathVariable Long id) {

@@ -109,12 +109,20 @@ function ProductionPlanningPage() {
   }
 
   function handleCancelOrder(orderId) {
-    const confirmed = window.confirm('Bu siparişi iptal etmek istediğinize emin misiniz?')
-    if (!confirmed) return
+    const reason = window.prompt('İptal nedenini yazın (zorunlu):')
+    if (!reason || reason.trim() === '') {
+      setErrorMessage('İptal için açıklama girmelisiniz')
+      return
+    }
+
+    const pin = window.prompt('Yetkili PIN kodunu girin:')
+    if (!pin) return
 
     setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
-      method: 'PUT'
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: pin, reason: reason })
     })
       .then(response => {
         if (!response.ok) {

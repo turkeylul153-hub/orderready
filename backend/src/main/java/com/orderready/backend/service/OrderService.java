@@ -209,9 +209,19 @@ public class OrderService {
         return orderRepository.save(order);
     }
     // Siparişi iptal eder (silmez, sadece durumu değiştirir - geçmiş korunur)
-    public Order cancelOrder(Long orderId) {
+    public Order cancelOrder(Long orderId, String pin, String reason) {
+        verifyPin(pin);
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new RuntimeException("İptal açıklaması zorunludur");
+        }
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı"));
+
+        String existingNotes = order.getNotes();
+        String cancelNote = "İptal nedeni: " + reason;
+        order.setNotes(existingNotes != null && !existingNotes.isEmpty() ? existingNotes + " | " + cancelNote : cancelNote);
 
         order.setStatus("CANCELLED");
         return orderRepository.save(order);

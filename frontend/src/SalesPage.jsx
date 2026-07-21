@@ -27,6 +27,8 @@ function SalesPage() {
   }, [])
 
   useEffect(() => {
+    let isCurrent = true
+
     if (selectedProductId && quantity) {
       fetch('http://localhost:8080/api/feasibility/check', {
         method: 'POST',
@@ -34,9 +36,17 @@ function SalesPage() {
         body: JSON.stringify({ productId: selectedProductId, quantityKg: quantity })
       })
         .then(response => response.json())
-        .then(data => setFeasibility(data))
+        .then(data => {
+          if (isCurrent) {
+            setFeasibility(data)
+          }
+        })
     } else {
       setFeasibility(null)
+    }
+
+    return () => {
+      isCurrent = false
     }
   }, [selectedProductId, quantity])
 
