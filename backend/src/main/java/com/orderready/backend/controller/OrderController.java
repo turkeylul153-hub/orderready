@@ -1,5 +1,6 @@
 package com.orderready.backend.controller;
-
+import com.orderready.backend.repository.MaterialStockTransactionRepository;
+import com.orderready.backend.repository.ProductStockTransactionRepository;
 import com.orderready.backend.entity.Order;
 import com.orderready.backend.repository.OrderRepository;
 import com.orderready.backend.service.OrderService;
@@ -13,6 +14,11 @@ import java.util.List;
 @RequestMapping("/api/orders")
 public class OrderController {
 
+    @Autowired
+    private MaterialStockTransactionRepository materialTxRepository;
+
+    @Autowired
+    private ProductStockTransactionRepository productTxRepository;
     @Autowired
     private OrderRepository orderRepository;
 
@@ -29,6 +35,23 @@ public class OrderController {
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
         return orderRepository.save(order);
+    }
+    // DELETE /api/orders/{id} - sadece PENDING durumundaki siparişleri siler
+    @DeleteMapping("/{id}")
+    public void deleteOrder(@PathVariable Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı"));
+
+        if (!"PENDING".equals(order.getStatus())) {
+            throw new RuntimeException("Sadece beklemede olan siparişler silinebilir");
+        }
+
+        boolean hasHistory = materialTxRepository.existsByOrder_Id(id) || productTxRepository.existsByOrder_Id(id);
+        if (hasHistory) {
+            throw new RuntimeException("Bu siparişin işlem geçmişi var, silinemez");
+        }
+
+        orderRepository.deleteById(id);
     }
 
     // PUT /api/orders/{id}/start-production - üretime başlatır, hammaddeyi düşer

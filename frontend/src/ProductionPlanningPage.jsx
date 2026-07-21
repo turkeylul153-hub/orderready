@@ -80,6 +80,25 @@ function ProductionPlanningPage() {
       .then(() => fetchOrders())
       .catch(error => setErrorMessage(error.message))
   }
+function handleDeleteOrder(orderId) {
+  const confirmed = window.confirm('Bu siparişi tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')
+  if (!confirmed) return
+
+  setErrorMessage('')
+  fetch(`http://localhost:8080/api/orders/${orderId}`, {
+    method: 'DELETE'
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => {
+          throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+        })
+      }
+      fetchOrders()
+    })
+    .catch(error => setErrorMessage(error.message))
+}
+
 
   function toggleDetails(order) {
     if (expandedOrderId === order.id) {
@@ -186,7 +205,10 @@ function ProductionPlanningPage() {
                     {expandedOrderId === order.id ? 'Detayı Gizle' : 'Detay Göster'}
                   </button>
                   {order.status === 'PENDING' && (
-                    <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
+                    <>
+                      <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
+                      <button className="secondary" onClick={() => handleDeleteOrder(order.id)}>Sil</button>
+                    </>
                   )}
                   {order.status === 'IN_PRODUCTION' && (
                     <>

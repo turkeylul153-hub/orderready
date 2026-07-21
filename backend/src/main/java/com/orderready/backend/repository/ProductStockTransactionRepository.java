@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface ProductStockTransactionRepository extends JpaRepository<ProductStockTransaction, Long> {
     List<ProductStockTransaction> findByProduct_IdOrderByCreatedAtDesc(Long productId);
-
     Optional<ProductStockTransaction> findFirstByProduct_IdOrderByCreatedAtDesc(Long productId);
+    boolean existsByOrder_Id(Long orderId);
 }

@@ -10,4 +10,5 @@ public interface MaterialStockTransactionRepository extends JpaRepository<Materi
     List<MaterialStockTransaction> findByMaterial_IdOrderByCreatedAtDesc(Long materialId);
     Optional<MaterialStockTransaction> findFirstByMaterial_IdOrderByCreatedAtDesc(Long materialId);
     List<MaterialStockTransaction> findAllByOrderByCreatedAtDesc();
+    boolean existsByOrder_Id(Long orderId);
 }
