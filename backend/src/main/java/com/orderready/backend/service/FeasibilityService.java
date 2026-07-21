@@ -13,7 +13,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-// bir siparişin üretilebilirliğini (üretim süresi, eksik malzeme, tedarikçi, teslim aralığı) hesaplar
+// Bir siparişin üretilebilirliğini (üretim süresi, eksik malzeme, tedarikçi, teslim aralığı) hesaplar
 @Service
 public class FeasibilityService {
 
@@ -38,19 +38,16 @@ public class FeasibilityService {
         boolean hasShortfall = false;
 
         for (Recipe recipe : recipes) {
-            // istenen miktar için gereken malzeme miktarını hesapla
             BigDecimal required = recipe.getQuantityPer100kg()
                     .multiply(request.getQuantityKg())
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-            // fabrikadaki güncel stoğu bul
             BigDecimal factoryStock = materialTxRepository
                     .findFirstByMaterial_IdOrderByCreatedAtDesc(recipe.getMaterial().getId())
                     .map(MaterialStockTransaction::getBalanceAfter)
                     .orElse(BigDecimal.ZERO);
 
             if (factoryStock.compareTo(required) < 0) {
-                // eksik var
                 hasShortfall = true;
                 BigDecimal shortfallAmount = required.subtract(factoryStock);
 
@@ -61,7 +58,6 @@ public class FeasibilityService {
                 shortfall.setFactoryStock(factoryStock);
                 shortfall.setShortfall(shortfallAmount);
 
-                // bu malzemeyi sağlayan tedarikçiyi bul (varsa ilkini kullan)
                 List<SupplierMaterial> suppliers = supplierMaterialRepository.findByMaterial_Id(recipe.getMaterial().getId());
                 if (!suppliers.isEmpty()) {
                     shortfall.setSupplierName(suppliers.get(0).getSupplier().getName());
@@ -73,22 +69,36 @@ public class FeasibilityService {
             }
         }
 
-        // üretim süresini hesapla (saat cinsinden)
         BigDecimal productionTimeHours = request.getQuantityKg()
                 .divide(product.getProductionRateKgPerHour(), 2, RoundingMode.HALF_UP);
 
-        // teslim aralığını belirle
         String deliveryEstimate;
         if (!hasShortfall) {
-            // eksik yok, sadece üretim süresine göre aralık
             if (productionTimeHours.compareTo(BigDecimal.valueOf(24)) <= 0) {
                 deliveryEstimate = "Bugün - 1 iş günü içinde";
             } else {
                 deliveryEstimate = "1-2 iş günü içinde";
             }
         } else {
-            // eksik var, tedarik beklenmesi gerektiği için daha geniş aralık
-            deliveryEstimate = "2-4 iş günü içinde";
+            // Eksik var: en büyük eksiklik oranına (eksik / mevcut stok) göre kademeli tahmin yap
+            BigDecimal maxShortfallRatio = BigDecimal.ZERO;
+            for (MaterialShortfall shortfall : shortfalls) {
+                BigDecimal stockBase = shortfall.getFactoryStock().compareTo(BigDecimal.ZERO) > 0
+                        ? shortfall.getFactoryStock()
+                        : BigDecimal.ONE;
+                BigDecimal ratio = shortfall.getShortfall().divide(stockBase, 4, RoundingMode.HALF_UP);
+                if (ratio.compareTo(maxShortfallRatio) > 0) {
+                    maxShortfallRatio = ratio;
+                }
+            }
+
+            if (maxShortfallRatio.compareTo(BigDecimal.valueOf(0.2)) <= 0) {
+                deliveryEstimate = "2-3 iş günü içinde";
+            } else if (maxShortfallRatio.compareTo(BigDecimal.valueOf(1)) <= 0) {
+                deliveryEstimate = "3-5 iş günü içinde";
+            } else {
+                deliveryEstimate = "1-2 hafta içinde, tedarikçiyle görüşülmeli";
+            }
         }
 
         FeasibilityResponse response = new FeasibilityResponse();
