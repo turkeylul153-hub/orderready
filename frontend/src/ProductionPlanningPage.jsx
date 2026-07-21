@@ -98,7 +98,25 @@ function handleDeleteOrder(orderId) {
     })
     .catch(error => setErrorMessage(error.message))
 }
+function handleCancelOrder(orderId) {
+  const confirmed = window.confirm('Bu siparişi iptal etmek istediğinize emin misiniz?')
+  if (!confirmed) return
 
+  setErrorMessage('')
+  fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
+    method: 'PUT'
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => {
+          throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+        })
+      }
+      return response.json()
+    })
+    .then(() => fetchOrders())
+    .catch(error => setErrorMessage(error.message))
+}
 
   function toggleDetails(order) {
     if (expandedOrderId === order.id) {
@@ -119,7 +137,7 @@ function handleDeleteOrder(orderId) {
       })
   }
 
-  const notShipped = orders.filter(order => order.status !== 'SHIPPED')
+const notShipped = orders.filter(order => order.status !== 'SHIPPED' && order.status !== 'CANCELLED')
 
   const pendingCount = notShipped.filter(o => o.status === 'PENDING').length
   const inProductionCount = notShipped.filter(o => o.status === 'IN_PRODUCTION').length
@@ -208,6 +226,7 @@ function handleDeleteOrder(orderId) {
                     <>
                       <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
                       <button className="secondary" onClick={() => handleDeleteOrder(order.id)}>Sil</button>
+                      <button className="secondary" onClick={() => handleCancelOrder(order.id)}>İptal Et</button>
                     </>
                   )}
                   {order.status === 'IN_PRODUCTION' && (
