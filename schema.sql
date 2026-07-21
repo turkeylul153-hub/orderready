@@ -233,3 +233,6 @@ ALTER TABLE orders ADD COLUMN notes TEXT;
 
 -- malzemelere açıklama alanı eklendi
 ALTER TABLE materials ADD COLUMN description VARCHAR(300);
+
+-- Reçete miktarları yanlış sütuna (quantity_per_10kg) girilmişti, doğru sütuna (quantity_per_100kg) taşındı
+UPDATE recipes SET quantity_per_100kg = quantity_per_10kg * 10;
