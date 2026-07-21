@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ManagementPanel from './ManagementPanel'
+
 function ProductionPlanningPage() {
   const [orders, setOrders] = useState([])
   const [expandedOrderId, setExpandedOrderId] = useState(null)
@@ -45,6 +46,28 @@ function ProductionPlanningPage() {
     setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/complete`, {
       method: 'PUT'
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
+          })
+        }
+        return response.json()
+      })
+      .then(() => fetchOrders())
+      .catch(error => setErrorMessage(error.message))
+  }
+
+  function handleRevertProduction(orderId) {
+    const pin = window.prompt('Bu işlemi geri almak için yetkili PIN kodunu girin:')
+    if (!pin) return
+
+    setErrorMessage('')
+    fetch(`http://localhost:8080/api/orders/${orderId}/revert-production`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: pin })
     })
       .then(response => {
         if (!response.ok) {
@@ -166,7 +189,10 @@ function ProductionPlanningPage() {
                     <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
                   )}
                   {order.status === 'IN_PRODUCTION' && (
-                    <button onClick={() => handleComplete(order.id)}>Tamamlandı</button>
+                    <>
+                      <button onClick={() => handleComplete(order.id)}>Tamamlandı</button>
+                      <button className="secondary" onClick={() => handleRevertProduction(order.id)}>Geri Al</button>
+                    </>
                   )}
                   {order.status === 'COMPLETED' && (
                     <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Depoda sevkiyat bekliyor</div>
@@ -215,6 +241,7 @@ function ProductionPlanningPage() {
           ))}
         </tbody>
       </table>
+
       <ManagementPanel />
     </div>
   )
