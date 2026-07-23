@@ -17,15 +17,20 @@ function ProductionPlanningPage() {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [searchText, setSearchText] = useState('')
   const [toast, setToast] = useState(null)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
     fetchOrders()
-  }, [])
+  }, [currentPage])
 
   function fetchOrders() {
-    fetch('http://localhost:8080/api/orders')
+    fetch(`http://localhost:8080/api/orders?page=${currentPage}&size=5`)
       .then(response => response.json())
-      .then(data => setOrders(data))
+      .then(data => {
+        setOrders(data.content)
+        setTotalPages(data.totalPages)
+      })
   }
 
   function handleStartProduction(orderId) {
@@ -309,6 +314,24 @@ function ProductionPlanningPage() {
           </tbody>
         </table>
       )}
+
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+        <button
+          className="secondary"
+          disabled={currentPage === 0}
+          onClick={() => setCurrentPage(currentPage - 1)}
+        >
+          ← Önceki
+        </button>
+        <span>Sayfa {currentPage + 1} / {totalPages || 1}</span>
+        <button
+          className="secondary"
+          disabled={currentPage >= totalPages - 1}
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Sonraki →
+        </button>
+      </div>
 
       <ManagementPanel />
     </div>

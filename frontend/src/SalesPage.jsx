@@ -59,9 +59,9 @@ function SalesPage() {
   }, [selectedProductId, quantity])
 
   function fetchOrders() {
-    fetch('http://localhost:8080/api/orders')
+    fetch('http://localhost:8080/api/orders?page=0&size=100')
       .then(response => response.json())
-      .then(data => setOrders(data))
+      .then(data => setOrders(data.content))
   }
 
   function handleCreateOrder() {
