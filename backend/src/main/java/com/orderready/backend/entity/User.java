@@ -21,6 +21,8 @@ public class User {
     @Column(nullable = false)
     private String role;
 
+    private String token;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -32,4 +34,7 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
 }
