@@ -27,26 +27,36 @@ function SalesPage() {
   }, [])
 
   useEffect(() => {
-    let isCurrent = true
+    if (!selectedProductId || !quantity) {
+      setFeasibility(null)
+      return
+    }
 
-    if (selectedProductId && quantity) {
+    // AbortController: bu isteği istediğimiz an iptal edebilmemizi sağlar
+    const controller = new AbortController()
+
+    // debounce: kullanıcı yazmayı bıraktıktan 500ms sonra isteği at
+    const timeoutId = setTimeout(() => {
       fetch('http://localhost:8080/api/feasibility/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: selectedProductId, quantityKg: quantity })
+        body: JSON.stringify({ productId: selectedProductId, quantityKg: quantity }),
+        signal: controller.signal
       })
         .then(response => response.json())
-        .then(data => {
-          if (isCurrent) {
-            setFeasibility(data)
+        .then(data => setFeasibility(data))
+        .catch(error => {
+          // istek bizim tarafımızdan iptal edildiyse, bu normal, hata gösterme
+          if (error.name !== 'AbortError') {
+            console.error('Uygunluk kontrolü başarısız:', error)
           }
         })
-    } else {
-      setFeasibility(null)
-    }
+    }, 500)
 
+    // temizleme fonksiyonu: yeni bir değişiklik olursa, bekleyen zamanlayıcıyı VE isteği iptal et
     return () => {
-      isCurrent = false
+      clearTimeout(timeoutId)
+      controller.abort()
     }
   }, [selectedProductId, quantity])
 
