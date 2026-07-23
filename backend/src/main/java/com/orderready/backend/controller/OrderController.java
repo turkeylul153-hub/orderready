@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import com.orderready.backend.dto.PinRequest;
 import java.util.List;
 import com.orderready.backend.dto.CancelRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -28,10 +32,12 @@ public class OrderController {
 
     // GET /api/orders - tüm siparişleri döndürür (üretim planlama ekranı için)
     @GetMapping
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public Page<Order> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        return orderRepository.findAll(pageable);
     }
-
     // POST /api/orders - yeni sipariş oluşturur
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
