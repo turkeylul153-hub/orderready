@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ManagementPanel from './ManagementPanel'
+import Toast from './Toast'
 
 function statusClass(status) {
   return 'status-badge status-' + status.toLowerCase()
@@ -13,9 +14,9 @@ function ProductionPlanningPage() {
   const [orders, setOrders] = useState([])
   const [expandedOrderId, setExpandedOrderId] = useState(null)
   const [feasibilityData, setFeasibilityData] = useState(null)
-  const [errorMessage, setErrorMessage] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [searchText, setSearchText] = useState('')
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     fetchOrders()
@@ -31,7 +32,6 @@ function ProductionPlanningPage() {
     const confirmed = window.confirm('Bu siparişin üretimine başlamak istediğinize emin misiniz?')
     if (!confirmed) return
 
-    setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/start-production`, {
       method: 'PUT'
     })
@@ -43,15 +43,17 @@ function ProductionPlanningPage() {
         }
         return response.json()
       })
-      .then(() => fetchOrders())
-      .catch(error => setErrorMessage(error.message))
+      .then(() => {
+        setToast({ message: 'Üretime başlatıldı', type: 'success' })
+        fetchOrders()
+      })
+      .catch(error => setToast({ message: error.message, type: 'error' }))
   }
 
   function handleComplete(orderId) {
     const confirmed = window.confirm('Bu siparişin üretimini tamamlandı olarak işaretlemek istediğinize emin misiniz?')
     if (!confirmed) return
 
-    setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/complete`, {
       method: 'PUT'
     })
@@ -63,15 +65,17 @@ function ProductionPlanningPage() {
         }
         return response.json()
       })
-      .then(() => fetchOrders())
-      .catch(error => setErrorMessage(error.message))
+      .then(() => {
+        setToast({ message: 'Üretim tamamlandı', type: 'success' })
+        fetchOrders()
+      })
+      .catch(error => setToast({ message: error.message, type: 'error' }))
   }
 
   function handleRevertProduction(orderId) {
     const pin = window.prompt('Bu işlemi geri almak için yetkili PIN kodunu girin:')
     if (!pin) return
 
-    setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/revert-production`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -85,15 +89,17 @@ function ProductionPlanningPage() {
         }
         return response.json()
       })
-      .then(() => fetchOrders())
-      .catch(error => setErrorMessage(error.message))
+      .then(() => {
+        setToast({ message: 'İşlem geri alındı', type: 'success' })
+        fetchOrders()
+      })
+      .catch(error => setToast({ message: error.message, type: 'error' }))
   }
 
   function handleDeleteOrder(orderId) {
     const confirmed = window.confirm('Bu siparişi tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')
     if (!confirmed) return
 
-    setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}`, {
       method: 'DELETE'
     })
@@ -103,22 +109,22 @@ function ProductionPlanningPage() {
             throw new Error(data.message || 'Bilinmeyen bir hata oluştu')
           })
         }
+        setToast({ message: 'Sipariş silindi', type: 'success' })
         fetchOrders()
       })
-      .catch(error => setErrorMessage(error.message))
+      .catch(error => setToast({ message: error.message, type: 'error' }))
   }
 
   function handleCancelOrder(orderId) {
     const reason = window.prompt('İptal nedenini yazın (zorunlu):')
     if (!reason || reason.trim() === '') {
-      setErrorMessage('İptal için açıklama girmelisiniz')
+      setToast({ message: 'İptal için açıklama girmelisiniz', type: 'error' })
       return
     }
 
     const pin = window.prompt('Yetkili PIN kodunu girin:')
     if (!pin) return
 
-    setErrorMessage('')
     fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -132,8 +138,11 @@ function ProductionPlanningPage() {
         }
         return response.json()
       })
-      .then(() => fetchOrders())
-      .catch(error => setErrorMessage(error.message))
+      .then(() => {
+        setToast({ message: 'Sipariş iptal edildi', type: 'success' })
+        fetchOrders()
+      })
+      .catch(error => setToast({ message: error.message, type: 'error' }))
   }
 
   function toggleDetails(order) {
@@ -181,6 +190,8 @@ function ProductionPlanningPage() {
 
   return (
     <div className="card">
+      <Toast toast={toast} onClose={() => setToast(null)} />
+
       <h2>Üretim planlama</h2>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -194,12 +205,6 @@ function ProductionPlanningPage() {
           📦 <strong>{completedCount}</strong> Sevkiyat Bekliyor
         </div>
       </div>
-
-      {errorMessage && (
-        <div style={{ background: '#fff3e0', color: '#b45309', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-          ⚠️ {errorMessage}
-        </div>
-      )}
 
       <div style={{ marginBottom: '1rem' }}>
         <button className={statusFilter === 'ALL' ? '' : 'secondary'} onClick={() => setStatusFilter('ALL')}>Tümü</button>

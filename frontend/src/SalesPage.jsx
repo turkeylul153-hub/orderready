@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Toast from './Toast'
 
 function statusClass(status) {
   return 'status-badge status-' + status.toLowerCase()
@@ -17,6 +18,7 @@ function SalesPage() {
   const [notes, setNotes] = useState('')
   const [orders, setOrders] = useState([])
   const [feasibility, setFeasibility] = useState(null)
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     fetch('http://localhost:8080/api/products')
@@ -32,10 +34,8 @@ function SalesPage() {
       return
     }
 
-    // AbortController: bu isteği istediğimiz an iptal edebilmemizi sağlar
     const controller = new AbortController()
 
-    // debounce: kullanıcı yazmayı bıraktıktan 500ms sonra isteği at
     const timeoutId = setTimeout(() => {
       fetch('http://localhost:8080/api/feasibility/check', {
         method: 'POST',
@@ -46,14 +46,12 @@ function SalesPage() {
         .then(response => response.json())
         .then(data => setFeasibility(data))
         .catch(error => {
-          // istek bizim tarafımızdan iptal edildiyse, bu normal, hata gösterme
           if (error.name !== 'AbortError') {
             console.error('Uygunluk kontrolü başarısız:', error)
           }
         })
     }, 500)
 
-    // temizleme fonksiyonu: yeni bir değişiklik olursa, bekleyen zamanlayıcıyı VE isteği iptal et
     return () => {
       clearTimeout(timeoutId)
       controller.abort()
@@ -83,6 +81,7 @@ function SalesPage() {
     })
       .then(response => response.json())
       .then(() => {
+        setToast({ message: 'Sipariş başarıyla oluşturuldu', type: 'success' })
         setSelectedProductId('')
         setQuantity('')
         setCustomerName('')
@@ -95,6 +94,8 @@ function SalesPage() {
 
   return (
     <div className="card">
+      <Toast toast={toast} onClose={() => setToast(null)} />
+
       <h2>Yeni sipariş oluştur</h2>
 
       <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)}>
