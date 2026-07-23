@@ -19,14 +19,18 @@ function SalesPage() {
   const [orders, setOrders] = useState([])
   const [feasibility, setFeasibility] = useState(null)
   const [toast, setToast] = useState(null)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
     fetch('http://localhost:8080/api/products')
       .then(response => response.json())
       .then(data => setProducts(data))
-
-    fetchOrders()
   }, [])
+
+  useEffect(() => {
+    fetchOrders()
+  }, [currentPage])
 
   useEffect(() => {
     if (!selectedProductId || !quantity) {
@@ -59,9 +63,12 @@ function SalesPage() {
   }, [selectedProductId, quantity])
 
   function fetchOrders() {
-    fetch('http://localhost:8080/api/orders?page=0&size=100')
+    fetch(`http://localhost:8080/api/orders?page=${currentPage}&size=5`)
       .then(response => response.json())
-      .then(data => setOrders(data.content))
+      .then(data => {
+        setOrders(data.content)
+        setTotalPages(data.totalPages)
+      })
   }
 
   function handleCreateOrder() {
@@ -171,6 +178,24 @@ function SalesPage() {
           </tbody>
         </table>
       )}
+
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+        <button
+          className="secondary"
+          disabled={currentPage === 0}
+          onClick={() => setCurrentPage(currentPage - 1)}
+        >
+          ← Önceki
+        </button>
+        <span>Sayfa {currentPage + 1} / {totalPages || 1}</span>
+        <button
+          className="secondary"
+          disabled={currentPage >= totalPages - 1}
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Sonraki →
+        </button>
+      </div>
     </div>
   )
 }
