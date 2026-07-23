@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
+import Toast from './Toast'
 
 function InventoryPage() {
   const [stock, setStock] = useState([])
   const [amounts, setAmounts] = useState({})
-  const [errorMessage, setErrorMessage] = useState('')
   const [pendingShipments, setPendingShipments] = useState([])
   const [shippedOrders, setShippedOrders] = useState([])
   const [history, setHistory] = useState([])
@@ -11,6 +11,7 @@ function InventoryPage() {
   const [historyTypeFilter, setHistoryTypeFilter] = useState('ALL')
   const [showShippedHistory, setShowShippedHistory] = useState(false)
   const [showStockHistory, setShowStockHistory] = useState(false)
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     fetchStock()
@@ -50,11 +51,10 @@ function InventoryPage() {
   }
 
   function handleAdjust(materialId, type) {
-    setErrorMessage('')
     const quantity = amounts[materialId]
 
     if (!quantity) {
-      setErrorMessage('Lütfen bir miktar girin')
+      setToast({ message: 'Lütfen bir miktar girin', type: 'error' })
       return
     }
 
@@ -65,10 +65,11 @@ function InventoryPage() {
     })
       .then(response => response.json())
       .then(() => {
+        setToast({ message: 'Stok güncellendi', type: 'success' })
         setAmounts({ ...amounts, [materialId]: '' })
         fetchStock()
       })
-      .catch(error => setErrorMessage('İşlem başarısız oldu'))
+      .catch(error => setToast({ message: 'İşlem başarısız oldu', type: 'error' }))
   }
 
   function handleShip(order) {
@@ -81,7 +82,11 @@ function InventoryPage() {
       method: 'PUT'
     })
       .then(response => response.json())
-      .then(() => fetchOrders())
+      .then(() => {
+        setToast({ message: 'Sipariş gönderildi', type: 'success' })
+        fetchOrders()
+      })
+      .catch(() => setToast({ message: 'Gönderim başarısız oldu', type: 'error' }))
   }
 
   function handleRevertShipment(order) {
@@ -101,8 +106,11 @@ function InventoryPage() {
         }
         return response.json()
       })
-      .then(() => fetchOrders())
-      .catch(error => alert(error.message))
+      .then(() => {
+        setToast({ message: 'Gönderim geri alındı', type: 'success' })
+        fetchOrders()
+      })
+      .catch(error => setToast({ message: error.message, type: 'error' }))
   }
 
   let filteredHistory = history
@@ -118,6 +126,8 @@ function InventoryPage() {
 
   return (
     <div>
+      <Toast toast={toast} onClose={() => setToast(null)} />
+
       <div className="card">
         <h2>Sevkiyat bekleyen siparişler</h2>
         {pendingShipments.length === 0 ? (
@@ -150,12 +160,6 @@ function InventoryPage() {
 
       <div className="card">
         <h2>Depo stok yönetimi</h2>
-
-        {errorMessage && (
-          <div style={{ background: '#fff3e0', color: '#b45309', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-            ⚠️ {errorMessage}
-          </div>
-        )}
 
         <table>
           <thead>
