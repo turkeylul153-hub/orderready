@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import LoginPage from './LoginPage'
 import InventoryPage from './InventoryPage'
@@ -6,22 +6,47 @@ import SalesPage from './SalesPage'
 import ProductionPlanningPage from './ProductionPlanningPage'
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(() => {
-      const saved = localStorage.getItem('currentUser')
-      // saved bir string olarak gelir ama biz object istiyoruz
-      // JSON.parse(saved) metni objecte çevirir.
-      return saved ? JSON.parse(saved) : null
+  const [currentUser, setCurrentUser] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Sayfa ilk açıldığında, kayıtlı bir token var mı diye backend'e sor
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+
+    fetch(`http://localhost:8080/api/auth/me?token=${token}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Geçersiz oturum')
+        }
+        return response.json()
       })
+      .then(data => {
+        setCurrentUser(data)
+        setIsLoading(false)
+      })
+      .catch(() => {
+        localStorage.removeItem('token')
+        setIsLoading(false)
+      })
+  }, [])
 
   function handleLoginSuccess(userData) {
-      localStorage.setItem('currentUser' , JSON.stringify(userData))
-
+    localStorage.setItem('token', userData.token)
     setCurrentUser(userData)
   }
 
   function handleLogout() {
-      localStorage.removeItem('currentUser')
+    localStorage.removeItem('token')
     setCurrentUser(null)
+  }
+
+  if (isLoading) {
+    return <div style={{ padding: '2rem', textAlign: 'center' }}>Yükleniyor...</div>
   }
 
   if (!currentUser) {
@@ -41,10 +66,9 @@ function App() {
 
       {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
       {currentUser.role === 'SALES' && <SalesPage />}
-    {currentUser.role === 'PLANNER' && <ProductionPlanningPage />}
+      {currentUser.role === 'PLANNER' && <ProductionPlanningPage />}
     </div>
   )
 }
 
 export default App
-
