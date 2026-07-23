@@ -6,13 +6,21 @@ import SalesPage from './SalesPage'
 import ProductionPlanningPage from './ProductionPlanningPage'
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState(() => {
+      const saved = localStorage.getItem('currentUser')
+      // saved bir string olarak gelir ama biz object istiyoruz
+      // JSON.parse(saved) metni objecte çevirir.
+      return saved ? JSON.parse(saved) : null
+      })
 
   function handleLoginSuccess(userData) {
+      localStorage.setItem('currentUser' , JSON.stringify(userData))
+
     setCurrentUser(userData)
   }
 
   function handleLogout() {
+      localStorage.removeItem('currentUser')
     setCurrentUser(null)
   }
 
@@ -39,3 +47,4 @@ function App() {
 }
 
 export default App
+

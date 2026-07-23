@@ -16,21 +16,36 @@ public class AuthService {
     private UserRepository userRepository;
 
     public LoginResponse login(LoginRequest request) {
-        // kullanıcıyı adına göre bul
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Kullanıcı adı veya şifre hatalı"));
 
-        // girilen şifreyi, veritabanındaki hash'lenmiş şifreyle karşılaştır
         boolean passwordMatches = BCrypt.checkpw(request.getPassword(), user.getPassword());
 
         if (!passwordMatches) {
             throw new RuntimeException("Kullanıcı adı veya şifre hatalı");
         }
 
-        // giriş başarılı, cevabı hazırla
+        // rastgele, tahmin edilemez bir token üret ve kullanıcıya kaydet
+        String token = java.util.UUID.randomUUID().toString();
+        user.setToken(token);
+        userRepository.save(user);
+
         LoginResponse response = new LoginResponse();
         response.setUsername(user.getUsername());
         response.setRole(user.getRole());
+        response.setToken(token);
+        return response;
+    }
+
+    // token'a göre kullanıcıyı bulur (sayfa yenilendiğinde kimlik doğrulamak için)
+    public LoginResponse getUserByToken(String token) {
+        User user = userRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Geçersiz oturum"));
+
+        LoginResponse response = new LoginResponse();
+        response.setUsername(user.getUsername());
+        response.setRole(user.getRole());
+        response.setToken(token);
         return response;
     }
 }
