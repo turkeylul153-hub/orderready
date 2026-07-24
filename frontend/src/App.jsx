@@ -80,36 +80,33 @@ function App() {
   const ActivePage = rolePages[activeRole]
 
   return (
-    <div className="app-layout">
-      <aside className="sidebar">
-        <div className="sidebar-logo">OrderReady</div>
-
-        <nav className="sidebar-nav">
-          {userRoles.map(role => (
-            <div
-              key={role}
-              className={`sidebar-nav-item ${activeRole === role ? 'active' : ''}`}
-              onClick={() => setActiveRole(role)}
-            >
-              <span className="sidebar-nav-icon">{roleIcons[role] || '📄'}</span>
-              {roleLabels[role] || role}
-            </div>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="sidebar-user">
-            <div className="sidebar-avatar">{currentUser.username.charAt(0).toUpperCase()}</div>
-            <div>
-              <div className="sidebar-username">{currentUser.username}</div>
-              <span className="role-badge">{userRoles.join(' + ')}</span>
-            </div>
-          </div>
+    <div className="app-with-cards">
+      <div className="app-header">
+        <h1>OrderReady</h1>
+        <div className="user-info">
+          <span>{currentUser.username}</span>
+          <span className="role-badge">{userRoles.join(' + ')}</span>
           <button className="secondary" onClick={handleLogout}>Çıkış yap</button>
         </div>
-      </aside>
+      </div>
 
-      <main className="app-content">
+      <div className="nav-cards">
+        {userRoles.map(role => (
+          <div
+            key={role}
+            className={`nav-card ${activeRole === role ? 'active' : ''}`}
+            onClick={() => setActiveRole(role)}
+          >
+            <span className="nav-card-icon">{roleIcons[role] || '📄'}</span>
+            <div>
+              <div className="nav-card-title">{roleLabels[role] || role}</div>
+              <div className="nav-card-subtitle">{activeRole === role ? 'Şu an aktif' : 'Geçmek için tıkla'}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <main className="app-content-cards">
         {ActivePage && <ActivePage />}
       </main>
     </div>
