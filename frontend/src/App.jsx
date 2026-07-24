@@ -5,11 +5,16 @@ import InventoryPage from './InventoryPage'
 import SalesPage from './SalesPage'
 import ProductionPlanningPage from './ProductionPlanningPage'
 
+const roleLabels = {
+  WAREHOUSE: 'Depo Yönetimi',
+  SALES: 'Sipariş Oluşturma',
+  PLANNER: 'Üretim Planlama'
+}
+
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Sayfa ilk açıldığında, kayıtlı bir token var mı diye backend'e sor
   useEffect(() => {
     const token = localStorage.getItem('token')
 
@@ -54,19 +59,30 @@ function App() {
   }
 
   return (
-    <div>
-      <div className="app-header">
-        <h1>OrderReady</h1>
-        <div className="user-info">
-          <span>{currentUser.username}</span>
-          <span className="role-badge">{currentUser.role}</span>
+    <div className="app-layout">
+      <aside className="sidebar">
+        <div className="sidebar-logo">OrderReady</div>
+
+        <nav className="sidebar-nav">
+          <div className="sidebar-nav-item active">
+            {roleLabels[currentUser.role] || 'Ana Sayfa'}
+          </div>
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <span className="sidebar-username">{currentUser.username}</span>
+            <span className="role-badge">{currentUser.role}</span>
+          </div>
           <button className="secondary" onClick={handleLogout}>Çıkış yap</button>
         </div>
-      </div>
+      </aside>
 
-      {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
-      {currentUser.role === 'SALES' && <SalesPage />}
-      {currentUser.role === 'PLANNER' && <ProductionPlanningPage />}
+      <main className="app-content">
+        {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
+        {currentUser.role === 'SALES' && <SalesPage />}
+        {currentUser.role === 'PLANNER' && <ProductionPlanningPage />}
+      </main>
     </div>
   )
 }

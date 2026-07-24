@@ -261,3 +261,72 @@ button.danger:hover {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
+
+/* Sidebar düzeni */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: var(--white);
+  border-right: 1px solid #eef6f0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1.25rem;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-nav {
+  flex: 1;
+}
+
+.sidebar-nav-item {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sidebar-nav-item.active {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+
+.sidebar-footer {
+  border-top: 1px solid #eef6f0;
+  padding-top: 1rem;
+}
+
+.sidebar-user {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-username {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.sidebar-footer button {
+  width: 100%;
+}
+
+.app-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1100px;
+}
