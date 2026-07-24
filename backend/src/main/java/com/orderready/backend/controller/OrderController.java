@@ -1,18 +1,18 @@
 package com.orderready.backend.controller;
-import com.orderready.backend.repository.MaterialStockTransactionRepository;
-import com.orderready.backend.repository.ProductStockTransactionRepository;
+
+import com.orderready.backend.dto.CancelRequest;
+import com.orderready.backend.dto.PinRequest;
 import com.orderready.backend.entity.Order;
+import com.orderready.backend.repository.MaterialStockTransactionRepository;
 import com.orderready.backend.repository.OrderRepository;
+import com.orderready.backend.repository.ProductStockTransactionRepository;
 import com.orderready.backend.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import com.orderready.backend.dto.PinRequest;
-import java.util.List;
-import com.orderready.backend.dto.CancelRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -24,25 +24,32 @@ public class OrderController {
 
     @Autowired
     private ProductStockTransactionRepository productTxRepository;
+
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
     private OrderService orderService;
 
-    // GET /api/orders - tüm siparişleri döndürür (üretim planlama ekranı için)
+    // GET /api/orders - siparişleri sayfalı olarak döndürür, isteğe bağlı durum filtresiyle
     @GetMapping
     public Page<Order> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        if (status != null) {
+            return orderRepository.findByStatus(status, pageable);
+        }
         return orderRepository.findAll(pageable);
     }
+
     // POST /api/orders - yeni sipariş oluşturur
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
         return orderRepository.save(order);
     }
+
     // DELETE /api/orders/{id} - sadece PENDING durumundaki siparişleri siler
     @DeleteMapping("/{id}")
     public void deleteOrder(@PathVariable Long id) {
@@ -60,6 +67,7 @@ public class OrderController {
 
         orderRepository.deleteById(id);
     }
+
     // PUT /api/orders/{id}/cancel - siparişi iptal eder (silmez, durumu değiştirir)
     @PutMapping("/{id}/cancel")
     public Order cancelOrder(@PathVariable Long id, @RequestBody CancelRequest request) {
@@ -83,6 +91,7 @@ public class OrderController {
     public Order shipOrder(@PathVariable Long id) {
         return orderService.shipOrder(id);
     }
+
     // PUT /api/orders/{id}/revert-production - üretimi geri alır, hammaddeyi geri ekler
     @PutMapping("/{id}/revert-production")
     public Order revertProduction(@PathVariable Long id, @RequestBody PinRequest request) {
