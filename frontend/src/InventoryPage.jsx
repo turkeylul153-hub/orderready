@@ -12,13 +12,29 @@ function InventoryPage() {
   const [showShippedHistory, setShowShippedHistory] = useState(false)
   const [showStockHistory, setShowStockHistory] = useState(false)
   const [toast, setToast] = useState(null)
+
   const [historyPage, setHistoryPage] = useState(0)
   const [historyTotalPages, setHistoryTotalPages] = useState(0)
 
+  const [pendingPage, setPendingPage] = useState(0)
+  const [pendingTotalPages, setPendingTotalPages] = useState(0)
+
+  const [shippedPage, setShippedPage] = useState(0)
+  const [shippedTotalPages, setShippedTotalPages] = useState(0)
+
   useEffect(() => {
     fetchStock()
-    fetchOrders()
   }, [])
+
+  useEffect(() => {
+    fetchPendingShipments()
+  }, [pendingPage])
+
+  useEffect(() => {
+    if (showShippedHistory) {
+      fetchShippedOrders()
+    }
+  }, [shippedPage, showShippedHistory])
 
   useEffect(() => {
     if (showStockHistory) {
@@ -32,12 +48,21 @@ function InventoryPage() {
       .then(data => setStock(data))
   }
 
-  function fetchOrders() {
-    fetch('http://localhost:8080/api/orders?page=0&size=100')
+  function fetchPendingShipments() {
+    fetch(`http://localhost:8080/api/orders?status=COMPLETED&page=${pendingPage}&size=5`)
       .then(response => response.json())
       .then(data => {
-        setPendingShipments(data.content.filter(order => order.status === 'COMPLETED'))
-        setShippedOrders(data.content.filter(order => order.status === 'SHIPPED'))
+        setPendingShipments(data.content)
+        setPendingTotalPages(data.totalPages)
+      })
+  }
+
+  function fetchShippedOrders() {
+    fetch(`http://localhost:8080/api/orders?status=SHIPPED&page=${shippedPage}&size=5`)
+      .then(response => response.json())
+      .then(data => {
+        setShippedOrders(data.content)
+        setShippedTotalPages(data.totalPages)
       })
   }
 
@@ -55,6 +80,13 @@ function InventoryPage() {
       fetchHistory()
     }
     setShowStockHistory(!showStockHistory)
+  }
+
+  function toggleShippedHistory() {
+    if (!showShippedHistory) {
+      fetchShippedOrders()
+    }
+    setShowShippedHistory(!showShippedHistory)
   }
 
   function handleAmountChange(materialId, value) {
@@ -95,7 +127,7 @@ function InventoryPage() {
       .then(response => response.json())
       .then(() => {
         setToast({ message: 'Sipariş gönderildi', type: 'success' })
-        fetchOrders()
+        fetchPendingShipments()
       })
       .catch(() => setToast({ message: 'Gönderim başarısız oldu', type: 'error' }))
   }
@@ -119,7 +151,8 @@ function InventoryPage() {
       })
       .then(() => {
         setToast({ message: 'Gönderim geri alındı', type: 'success' })
-        fetchOrders()
+        fetchShippedOrders()
+        fetchPendingShipments()
       })
       .catch(error => setToast({ message: error.message, type: 'error' }))
   }
@@ -144,28 +177,38 @@ function InventoryPage() {
         {pendingShipments.length === 0 ? (
           <div className="empty-state">📦 Şu an sevkiyat bekleyen sipariş yok.</div>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Ürün</th>
-                <th>Miktar</th>
-                <th>Müşteri</th>
-                <th>İşlem</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingShipments.map(order => (
-                <tr key={order.id}>
-                  <td>{order.product.name}</td>
-                  <td>{order.quantityKg} kg</td>
-                  <td>{order.customerName}</td>
-                  <td>
-                    <button onClick={() => handleShip(order)}>Gönderildi</button>
-                  </td>
+          <>
+            <table>
+              <thead>
+                <tr>
+                  <th>Ürün</th>
+                  <th>Miktar</th>
+                  <th>Müşteri</th>
+                  <th>İşlem</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pendingShipments.map(order => (
+                  <tr key={order.id}>
+                    <td>{order.product.name}</td>
+                    <td>{order.quantityKg} kg</td>
+                    <td>{order.customerName}</td>
+                    <td>
+                      <button onClick={() => handleShip(order)}>Gönderildi</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {pendingTotalPages > 1 && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+                <button className="secondary" disabled={pendingPage === 0} onClick={() => setPendingPage(pendingPage - 1)}>← Önceki</button>
+                <span>Sayfa {pendingPage + 1} / {pendingTotalPages}</span>
+                <button className="secondary" disabled={pendingPage >= pendingTotalPages - 1} onClick={() => setPendingPage(pendingPage + 1)}>Sonraki →</button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -256,21 +299,9 @@ function InventoryPage() {
 
             {historyTotalPages > 1 && (
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
-                <button
-                  className="secondary"
-                  disabled={historyPage === 0}
-                  onClick={() => setHistoryPage(historyPage - 1)}
-                >
-                  ← Önceki
-                </button>
+                <button className="secondary" disabled={historyPage === 0} onClick={() => setHistoryPage(historyPage - 1)}>← Önceki</button>
                 <span>Sayfa {historyPage + 1} / {historyTotalPages}</span>
-                <button
-                  className="secondary"
-                  disabled={historyPage >= historyTotalPages - 1}
-                  onClick={() => setHistoryPage(historyPage + 1)}
-                >
-                  Sonraki →
-                </button>
+                <button className="secondary" disabled={historyPage >= historyTotalPages - 1} onClick={() => setHistoryPage(historyPage + 1)}>Sonraki →</button>
               </div>
             )}
           </div>
@@ -278,35 +309,45 @@ function InventoryPage() {
       </div>
 
       <div className="card">
-        <h2 onClick={() => setShowShippedHistory(!showShippedHistory)} style={{ cursor: 'pointer' }}>
+        <h2 onClick={toggleShippedHistory} style={{ cursor: 'pointer' }}>
           Gönderilmiş Siparişler (Geçmiş) {showShippedHistory ? '▲' : '▼'}
         </h2>
         {showShippedHistory && (
           shippedOrders.length === 0 ? (
             <div className="empty-state">📦 Henüz gönderilmiş sipariş yok.</div>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Ürün</th>
-                  <th>Miktar</th>
-                  <th>Müşteri</th>
-                  <th>İşlem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {shippedOrders.map(order => (
-                  <tr key={order.id}>
-                    <td>{order.product.name}</td>
-                    <td>{order.quantityKg} kg</td>
-                    <td>{order.customerName}</td>
-                    <td>
-                      <button className="secondary" onClick={() => handleRevertShipment(order)}>Geri Al</button>
-                    </td>
+            <>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ürün</th>
+                    <th>Miktar</th>
+                    <th>Müşteri</th>
+                    <th>İşlem</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {shippedOrders.map(order => (
+                    <tr key={order.id}>
+                      <td>{order.product.name}</td>
+                      <td>{order.quantityKg} kg</td>
+                      <td>{order.customerName}</td>
+                      <td>
+                        <button className="secondary" onClick={() => handleRevertShipment(order)}>Geri Al</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {shippedTotalPages > 1 && (
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+                  <button className="secondary" disabled={shippedPage === 0} onClick={() => setShippedPage(shippedPage - 1)}>← Önceki</button>
+                  <span>Sayfa {shippedPage + 1} / {shippedTotalPages}</span>
+                  <button className="secondary" disabled={shippedPage >= shippedTotalPages - 1} onClick={() => setShippedPage(shippedPage + 1)}>Sonraki →</button>
+                </div>
+              )}
+            </>
           )
         )}
       </div>
