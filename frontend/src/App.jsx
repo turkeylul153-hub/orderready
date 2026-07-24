@@ -11,9 +11,16 @@ const roleLabels = {
   PLANNER: 'Üretim Planlama'
 }
 
+const rolePages = {
+  WAREHOUSE: InventoryPage,
+  SALES: SalesPage,
+  PLANNER: ProductionPlanningPage
+}
+
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [activeRole, setActiveRole] = useState(null)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -32,6 +39,9 @@ function App() {
       })
       .then(data => {
         setCurrentUser(data)
+        // İlk rolü varsayılan olarak aktif yap
+        const roles = data.role.split(',')
+        setActiveRole(roles[0])
         setIsLoading(false)
       })
       .catch(() => {
@@ -43,11 +53,14 @@ function App() {
   function handleLoginSuccess(userData) {
     localStorage.setItem('token', userData.token)
     setCurrentUser(userData)
+    const roles = userData.role.split(',')
+    setActiveRole(roles[0])
   }
 
   function handleLogout() {
     localStorage.removeItem('token')
     setCurrentUser(null)
+    setActiveRole(null)
   }
 
   if (isLoading) {
@@ -58,30 +71,39 @@ function App() {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />
   }
 
+  // Kullanıcının sahip olduğu tüm roller (virgülle ayrılmışsa böler)
+  const userRoles = currentUser.role.split(',')
+  const ActivePage = rolePages[activeRole]
+
   return (
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-logo">OrderReady</div>
 
         <nav className="sidebar-nav">
-          <div className="sidebar-nav-item active">
-            {roleLabels[currentUser.role] || 'Ana Sayfa'}
-          </div>
+          {userRoles.map(role => (
+            <div
+              key={role}
+              className={`sidebar-nav-item ${activeRole === role ? 'active' : ''}`}
+              onClick={() => setActiveRole(role)}
+              style={{ cursor: 'pointer' }}
+            >
+              {roleLabels[role] || role}
+            </div>
+          ))}
         </nav>
 
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <span className="sidebar-username">{currentUser.username}</span>
-            <span className="role-badge">{currentUser.role}</span>
+            <span className="role-badge">{userRoles.join(' + ')}</span>
           </div>
           <button className="secondary" onClick={handleLogout}>Çıkış yap</button>
         </div>
       </aside>
 
       <main className="app-content">
-        {currentUser.role === 'WAREHOUSE' && <InventoryPage />}
-        {currentUser.role === 'SALES' && <SalesPage />}
-        {currentUser.role === 'PLANNER' && <ProductionPlanningPage />}
+        {ActivePage && <ActivePage />}
       </main>
     </div>
   )
