@@ -11,6 +11,12 @@ const roleLabels = {
   PLANNER: 'Üretim Planlama'
 }
 
+const roleIcons = {
+  WAREHOUSE: '📦',
+  SALES: '🧾',
+  PLANNER: '🏭'
+}
+
 const rolePages = {
   WAREHOUSE: InventoryPage,
   SALES: SalesPage,
@@ -39,7 +45,6 @@ function App() {
       })
       .then(data => {
         setCurrentUser(data)
-        // İlk rolü varsayılan olarak aktif yap
         const roles = data.role.split(',')
         setActiveRole(roles[0])
         setIsLoading(false)
@@ -71,7 +76,6 @@ function App() {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />
   }
 
-  // Kullanıcının sahip olduğu tüm roller (virgülle ayrılmışsa böler)
   const userRoles = currentUser.role.split(',')
   const ActivePage = rolePages[activeRole]
 
@@ -86,8 +90,8 @@ function App() {
               key={role}
               className={`sidebar-nav-item ${activeRole === role ? 'active' : ''}`}
               onClick={() => setActiveRole(role)}
-              style={{ cursor: 'pointer' }}
             >
+              <span className="sidebar-nav-icon">{roleIcons[role] || '📄'}</span>
               {roleLabels[role] || role}
             </div>
           ))}
@@ -95,8 +99,11 @@ function App() {
 
         <div className="sidebar-footer">
           <div className="sidebar-user">
-            <span className="sidebar-username">{currentUser.username}</span>
-            <span className="role-badge">{userRoles.join(' + ')}</span>
+            <div className="sidebar-avatar">{currentUser.username.charAt(0).toUpperCase()}</div>
+            <div>
+              <div className="sidebar-username">{currentUser.username}</div>
+              <span className="role-badge">{userRoles.join(' + ')}</span>
+            </div>
           </div>
           <button className="secondary" onClick={handleLogout}>Çıkış yap</button>
         </div>

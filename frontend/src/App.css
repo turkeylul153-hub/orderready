@@ -24,48 +24,110 @@ body {
 }
 
 #root {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+  width: 100%;
+  min-height: 100vh;
 }
 
-/* Üst başlık alanı */
-.app-header {
+/* Sidebar düzeni */
+.app-layout {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--white);
-  padding: 1.25rem 1.75rem;
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  margin-bottom: 1.5rem;
+  min-height: 100vh;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: var(--green-dark);
+.sidebar {
+  width: 250px;
+  background: var(--white);
+  border-right: 1px solid #eef6f0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 2px 0 12px rgba(20, 83, 45, 0.04);
+}
+
+.sidebar-logo {
+  font-size: 1.35rem;
   font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 2.5rem;
   letter-spacing: -0.02em;
 }
 
-.app-header .user-info {
+.sidebar-nav {
+  flex: 1;
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  font-size: 0.9rem;
-  color: var(--text-muted);
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.role-badge {
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-nav-item:hover {
+  background: #f4faf6;
+}
+
+.sidebar-nav-item.active {
   background: var(--green-light);
   color: var(--green-dark);
-  padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  border-left: 3px solid var(--green-main);
+}
+
+.sidebar-nav-icon {
+  font-size: 1.05rem;
+}
+
+.sidebar-footer {
+  border-top: 1px solid #eef6f0;
+  padding-top: 1.25rem;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.sidebar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--green-main);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.sidebar-username {
+  font-size: 0.9rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  color: var(--text-dark);
+}
+
+.sidebar-footer button {
+  width: 100%;
+}
+
+.app-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1100px;
 }
 
 /* Kart görünümü */
@@ -82,6 +144,37 @@ body {
   color: var(--green-dark);
   font-size: 1.15rem;
   font-weight: 600;
+}
+
+/* Rozetler */
+.status-badge, .priority-badge {
+  display: inline-block;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-in_production { background: #dbeafe; color: #1e40af; }
+.status-completed { background: #fed7aa; color: #9a3412; }
+.status-shipped { background: #dcfce7; color: #166534; }
+.status-cancelled { background: #e5e7eb; color: #4b5563; }
+
+.priority-urgent { background: #fee2e2; color: #b91c1c; }
+.priority-normal { background: #f3f4f6; color: #4b5563; }
+
+.role-badge {
+  background: var(--green-light);
+  color: var(--green-dark);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 /* Butonlar */
@@ -111,6 +204,13 @@ button.secondary {
 
 button.secondary:hover {
   background: var(--green-light);
+}
+
+button.danger {
+  background: #dc2626;
+}
+button.danger:hover {
+  background: #b91c1c;
 }
 
 /* Input ve select kutuları */
@@ -165,6 +265,14 @@ tr:hover td {
   background: var(--green-light);
 }
 
+/* Boş durum mesajları */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
 /* Giriş ekranı */
 .login-screen {
   min-height: 100vh;
@@ -205,7 +313,7 @@ tr:hover td {
   margin-top: 0.75rem;
 }
 
-/* sipariş detay paneli */
+/* Sipariş detay paneli */
 .order-detail-panel {
   background: var(--green-bg);
   border-radius: 12px;
@@ -222,111 +330,4 @@ tr:hover td {
   margin-top: 0.75rem;
   box-shadow: none;
   border: 1px solid #d1e7d8;
-}
-td button {
-  margin-bottom: 0.4rem;
-}
-/* durum ve öncelik rozetleri */
-.status-badge, .priority-badge {
-  display: inline-block;
-  padding: 0.3rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.status-pending { background: #fef3c7; color: #92400e; }
-.status-in_production { background: #dbeafe; color: #1e40af; }
-.status-completed { background: #fed7aa; color: #9a3412; }
-.status-shipped { background: #dcfce7; color: #166534; }
-.status-cancelled { background: #e5e7eb; color: #4b5563; }
-
-.priority-urgent { background: #fee2e2; color: #b91c1c; }
-.priority-normal { background: #f3f4f6; color: #4b5563; }
-
-/* tehlikeli işlem butonları */
-button.danger {
-  background: #dc2626;
-}
-button.danger:hover {
-  background: #b91c1c;
-}
-
-/* boş durum mesajları */
-.empty-state {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-/* Sidebar düzeni */
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 240px;
-  background: var(--white);
-  border-right: 1px solid #eef6f0;
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem 1.25rem;
-  flex-shrink: 0;
-}
-
-.sidebar-logo {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--green-dark);
-  margin-bottom: 2rem;
-  letter-spacing: -0.02em;
-}
-
-.sidebar-nav {
-  flex: 1;
-}
-
-.sidebar-nav-item {
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.sidebar-nav-item.active {
-  background: var(--green-light);
-  color: var(--green-dark);
-}
-
-.sidebar-footer {
-  border-top: 1px solid #eef6f0;
-  padding-top: 1rem;
-}
-
-.sidebar-user {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.sidebar-username {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.sidebar-footer button {
-  width: 100%;
-}
-
-.app-content {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1100px;
 }
