@@ -12,11 +12,19 @@ function InventoryPage() {
   const [showShippedHistory, setShowShippedHistory] = useState(false)
   const [showStockHistory, setShowStockHistory] = useState(false)
   const [toast, setToast] = useState(null)
+  const [historyPage, setHistoryPage] = useState(0)
+  const [historyTotalPages, setHistoryTotalPages] = useState(0)
 
   useEffect(() => {
     fetchStock()
     fetchOrders()
   }, [])
+
+  useEffect(() => {
+    if (showStockHistory) {
+      fetchHistory()
+    }
+  }, [historyPage])
 
   function fetchStock() {
     fetch('http://localhost:8080/api/material-stock')
@@ -25,18 +33,21 @@ function InventoryPage() {
   }
 
   function fetchOrders() {
-    fetch('http://localhost:8080/api/orders')
+    fetch('http://localhost:8080/api/orders?page=0&size=100')
       .then(response => response.json())
       .then(data => {
-        setPendingShipments(data.filter(order => order.status === 'COMPLETED'))
-        setShippedOrders(data.filter(order => order.status === 'SHIPPED'))
+        setPendingShipments(data.content.filter(order => order.status === 'COMPLETED'))
+        setShippedOrders(data.content.filter(order => order.status === 'SHIPPED'))
       })
   }
 
   function fetchHistory() {
-    fetch('http://localhost:8080/api/material-stock/history')
+    fetch(`http://localhost:8080/api/material-stock/history?page=${historyPage}&size=10`)
       .then(response => response.json())
-      .then(data => setHistory(data))
+      .then(data => {
+        setHistory(data.content)
+        setHistoryTotalPages(data.totalPages)
+      })
   }
 
   function toggleStockHistory() {
@@ -241,6 +252,26 @@ function InventoryPage() {
                   ))}
                 </tbody>
               </table>
+            )}
+
+            {historyTotalPages > 1 && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+                <button
+                  className="secondary"
+                  disabled={historyPage === 0}
+                  onClick={() => setHistoryPage(historyPage - 1)}
+                >
+                  ← Önceki
+                </button>
+                <span>Sayfa {historyPage + 1} / {historyTotalPages}</span>
+                <button
+                  className="secondary"
+                  disabled={historyPage >= historyTotalPages - 1}
+                  onClick={() => setHistoryPage(historyPage + 1)}
+                >
+                  Sonraki →
+                </button>
+              </div>
             )}
           </div>
         )}
