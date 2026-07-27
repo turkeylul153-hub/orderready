@@ -1,3 +1,4 @@
+import { authFetch } from './api'
 import { useState, useEffect } from 'react'
 import Toast from './Toast'
 
@@ -23,7 +24,7 @@ function SalesPage() {
   const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/products')
+    authFetch('http://localhost:8080/api/products')
       .then(response => response.json())
       .then(data => setProducts(data))
   }, [])
@@ -41,7 +42,7 @@ function SalesPage() {
     const controller = new AbortController()
 
     const timeoutId = setTimeout(() => {
-      fetch('http://localhost:8080/api/feasibility/check', {
+        authFetch('http://localhost:8080/api/feasibility/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: selectedProductId, quantityKg: quantity }),
@@ -63,7 +64,7 @@ function SalesPage() {
   }, [selectedProductId, quantity])
 
   function fetchOrders() {
-    fetch(`http://localhost:8080/api/orders?page=${currentPage}&size=5`)
+    authFetch(`http://localhost:8080/api/orders?page=${currentPage}&size=5`)
       .then(response => response.json())
       .then(data => {
         setOrders(data.content)
@@ -75,7 +76,7 @@ function SalesPage() {
     const confirmed = window.confirm('Bu siparişi oluşturmak istediğinize emin misiniz?')
     if (!confirmed) return
 
-    fetch('http://localhost:8080/api/orders', {
+    authFetch('http://localhost:8080/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

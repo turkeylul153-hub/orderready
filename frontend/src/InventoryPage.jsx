@@ -1,3 +1,4 @@
+import { authFetch } from './api'
 import { useState, useEffect } from 'react'
 import Toast from './Toast'
 
@@ -43,13 +44,13 @@ function InventoryPage() {
   }, [historyPage])
 
   function fetchStock() {
-    fetch('http://localhost:8080/api/material-stock')
+    authFetch('http://localhost:8080/api/material-stock')
       .then(response => response.json())
       .then(data => setStock(data))
   }
 
   function fetchPendingShipments() {
-    fetch(`http://localhost:8080/api/orders?status=COMPLETED&page=${pendingPage}&size=5`)
+    authFetch(`http://localhost:8080/api/orders?status=COMPLETED&page=${pendingPage}&size=5`)
       .then(response => response.json())
       .then(data => {
         setPendingShipments(data.content)
@@ -58,7 +59,7 @@ function InventoryPage() {
   }
 
   function fetchShippedOrders() {
-    fetch(`http://localhost:8080/api/orders?status=SHIPPED&page=${shippedPage}&size=5`)
+    authFetch(`http://localhost:8080/api/orders?status=SHIPPED&page=${shippedPage}&size=5`)
       .then(response => response.json())
       .then(data => {
         setShippedOrders(data.content)
@@ -67,7 +68,7 @@ function InventoryPage() {
   }
 
   function fetchHistory() {
-    fetch(`http://localhost:8080/api/material-stock/history?page=${historyPage}&size=10`)
+    authFetch(`http://localhost:8080/api/material-stock/history?page=${historyPage}&size=10`)
       .then(response => response.json())
       .then(data => {
         setHistory(data.content)
@@ -101,7 +102,7 @@ function InventoryPage() {
       return
     }
 
-    fetch(`http://localhost:8080/api/material-stock/${materialId}/adjust`, {
+    authFetch(`http://localhost:8080/api/material-stock/${materialId}/adjust`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ quantity: quantity, type: type })
@@ -121,7 +122,7 @@ function InventoryPage() {
     )
     if (!confirmed) return
 
-    fetch(`http://localhost:8080/api/orders/${order.id}/ship`, {
+    authFetch(`http://localhost:8080/api/orders/${order.id}/ship`, {
       method: 'PUT'
     })
       .then(response => response.json())
@@ -136,7 +137,7 @@ function InventoryPage() {
     const pin = window.prompt('Bu gönderimi geri almak için yetkili PIN kodunu girin:')
     if (!pin) return
 
-    fetch(`http://localhost:8080/api/orders/${order.id}/revert-shipment`, {
+    authFetch(`http://localhost:8080/api/orders/${order.id}/revert-shipment`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin: pin })

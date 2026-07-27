@@ -1,3 +1,4 @@
+import { authFetch } from './api'
 import { useState, useEffect } from 'react'
 import ManagementPanel from './ManagementPanel'
 import Toast from './Toast'
@@ -25,7 +26,7 @@ function ProductionPlanningPage() {
   }, [currentPage])
 
   function fetchOrders() {
-    fetch(`http://localhost:8080/api/orders?page=${currentPage}&size=5`)
+    authFetch(`http://localhost:8080/api/orders?page=${currentPage}&size=5`)
       .then(response => response.json())
       .then(data => {
         setOrders(data.content)
@@ -37,7 +38,7 @@ function ProductionPlanningPage() {
     const confirmed = window.confirm('Bu siparişin üretimine başlamak istediğinize emin misiniz?')
     if (!confirmed) return
 
-    fetch(`http://localhost:8080/api/orders/${orderId}/start-production`, {
+    authFetch(`http://localhost:8080/api/orders/${orderId}/start-production`, {
       method: 'PUT'
     })
       .then(response => {
@@ -59,7 +60,7 @@ function ProductionPlanningPage() {
     const confirmed = window.confirm('Bu siparişin üretimini tamamlandı olarak işaretlemek istediğinize emin misiniz?')
     if (!confirmed) return
 
-    fetch(`http://localhost:8080/api/orders/${orderId}/complete`, {
+    authFetch(`http://localhost:8080/api/orders/${orderId}/complete`, {
       method: 'PUT'
     })
       .then(response => {
@@ -81,7 +82,7 @@ function ProductionPlanningPage() {
     const pin = window.prompt('Bu işlemi geri almak için yetkili PIN kodunu girin:')
     if (!pin) return
 
-    fetch(`http://localhost:8080/api/orders/${orderId}/revert-production`, {
+    authFetch(`http://localhost:8080/api/orders/${orderId}/revert-production`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin: pin })
@@ -105,7 +106,7 @@ function ProductionPlanningPage() {
     const confirmed = window.confirm('Bu siparişi tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')
     if (!confirmed) return
 
-    fetch(`http://localhost:8080/api/orders/${orderId}`, {
+    authFetch(`http://localhost:8080/api/orders/${orderId}`, {
       method: 'DELETE'
     })
       .then(response => {
@@ -130,7 +131,7 @@ function ProductionPlanningPage() {
     const pin = window.prompt('Yetkili PIN kodunu girin:')
     if (!pin) return
 
-    fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
+    authFetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin: pin, reason: reason })
@@ -157,7 +158,7 @@ function ProductionPlanningPage() {
       return
     }
 
-    fetch('http://localhost:8080/api/feasibility/check', {
+    authFetch('http://localhost:8080/api/feasibility/check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productId: order.product.id, quantityKg: order.quantityKg })

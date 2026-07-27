@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { authFetch } from './api'
 
 function ManagementPanel() {
   const [isOpen, setIsOpen] = useState(false)
@@ -30,19 +31,19 @@ function ManagementPanel() {
   }, [isOpen])
 
   function fetchMaterials() {
-    fetch('http://localhost:8080/api/materials')
+    authFetch('http://localhost:8080/api/materials')
       .then(response => response.json())
       .then(data => setMaterials(data))
   }
 
   function fetchSuppliers() {
-    fetch('http://localhost:8080/api/suppliers')
+    authFetch('http://localhost:8080/api/suppliers')
       .then(response => response.json())
       .then(data => setSuppliers(data))
   }
 
   function handleAddMaterial() {
-    fetch('http://localhost:8080/api/materials', {
+    authFetch('http://localhost:8080/api/materials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: materialName, type: materialType, unit: materialUnit , description: materialDescription})
@@ -60,7 +61,7 @@ function ManagementPanel() {
   }
 
   function handleAddSupplier() {
-    fetch('http://localhost:8080/api/suppliers', {
+    authFetch('http://localhost:8080/api/suppliers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: supplierName, contactEmail: supplierEmail })
@@ -75,7 +76,7 @@ function ManagementPanel() {
   }
 
   function handleLink() {
-    fetch('http://localhost:8080/api/supplier-materials', {
+    authFetch('http://localhost:8080/api/supplier-materials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
