@@ -138,6 +138,15 @@ body {
   font-weight: 600;
 }
 
+/* Tablo kaydırma sarmalayıcısı (sadece tablo kayar, butonlar değil) */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.table-scroll table {
+  min-width: 600px;
+}
+
 /* Durum ve öncelik rozetleri */
 .status-badge, .priority-badge {
   display: inline-block;
@@ -311,4 +320,87 @@ tr:hover td {
   margin-top: 0.75rem;
   box-shadow: none;
   border: 1px solid #c8d9cf;
+}
+
+/* Responsive tasarım - tablet ve telefon */
+@media (max-width: 768px) {
+  .app-with-cards {
+    padding: 1rem;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .app-header .user-info {
+    flex-wrap: wrap;
+  }
+
+  .nav-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+
+  input, select {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .login-card {
+    padding: 1.75rem;
+    margin: 0 1rem;
+  }
+
+  /* Tabloları telefon genişliğinde kart formatına çevir */
+    .responsive-table thead {
+      display: none;
+    }
+
+    .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td {
+      display: block;
+      width: 100%;
+    }
+
+    .responsive-table {
+      min-width: 0;
+    }
+
+    .responsive-table tr {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+.responsive-table td {
+  border-bottom: none;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.responsive-table td::before {
+  content: attr(data-label);
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 0.25rem;
+}
+
+.responsive-table td > button,
+.responsive-table td > div {
+  margin-top: 0.3rem;
+}
+
+
+    .table-scroll {
+      overflow-x: visible;
+    }
 }

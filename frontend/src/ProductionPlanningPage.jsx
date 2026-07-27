@@ -199,7 +199,7 @@ function ProductionPlanningPage() {
 
       <h2>Üretim planlama</h2>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
         <div style={{ background: 'var(--green-light)', padding: '0.75rem 1.25rem', borderRadius: '10px' }}>
           ⏳ <strong>{pendingCount}</strong> Bekleyen
         </div>
@@ -211,7 +211,7 @@ function ProductionPlanningPage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
         <button className={statusFilter === 'ALL' ? '' : 'secondary'} onClick={() => setStatusFilter('ALL')}>Tümü</button>
         <button className={statusFilter === 'PENDING' ? '' : 'secondary'} onClick={() => setStatusFilter('PENDING')}>Bekleyen</button>
         <button className={statusFilter === 'IN_PRODUCTION' ? '' : 'secondary'} onClick={() => setStatusFilter('IN_PRODUCTION')}>Üretimde</button>
@@ -227,95 +227,97 @@ function ProductionPlanningPage() {
       {sortedOrders.length === 0 ? (
         <div className="empty-state">📋 Gösterilecek sipariş yok.</div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Ürün</th>
-              <th>Miktar</th>
-              <th>Müşteri</th>
-              <th>Öncelik</th>
-              <th>Not</th>
-              <th>Durum</th>
-              <th>İşlem</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedOrders.map(order => (
-              <>
-                <tr key={order.id}>
-                  <td>{order.product.name}</td>
-                  <td>{order.quantityKg} kg</td>
-                  <td>{order.customerName}</td>
-                  <td><span className={priorityClass(order.priority)}>{order.priority}</span></td>
-                  <td>{order.notes || '-'}</td>
-                  <td><span className={statusClass(order.status)}>{order.status}</span></td>
-                  <td>
-                    <button onClick={() => toggleDetails(order)}>
-                      {expandedOrderId === order.id ? 'Detayı Gizle' : 'Detay Göster'}
-                    </button>
-                    {order.status === 'PENDING' && (
-                      <>
-                        <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
-                        <button className="danger" onClick={() => handleDeleteOrder(order.id)}>Sil</button>
-                        <button className="danger" onClick={() => handleCancelOrder(order.id)}>İptal Et</button>
-                      </>
-                    )}
-                    {order.status === 'IN_PRODUCTION' && (
-                      <>
-                        <button onClick={() => handleComplete(order.id)}>Tamamlandı</button>
-                        <button className="secondary" onClick={() => handleRevertProduction(order.id)}>Geri Al</button>
-                      </>
-                    )}
-                    {order.status === 'COMPLETED' && (
-                      <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Depoda sevkiyat bekliyor</div>
-                    )}
-                  </td>
-                </tr>
-
-                {expandedOrderId === order.id && feasibilityData && (
-                  <tr>
-                    <td colSpan="7">
-                      <div className="order-detail-panel">
-                        <p>Üretim süresi: {feasibilityData.productionTimeHours} saat</p>
-                        <p>Tahmini teslim: {feasibilityData.deliveryEstimateText}</p>
-
-                        {feasibilityData.materialShortfalls.length > 0 ? (
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>Malzeme</th>
-                                <th>Gereken</th>
-                                <th>Fabrikada</th>
-                                <th>Eksik</th>
-                                <th>Tedarikçi</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {feasibilityData.materialShortfalls.map((item, index) => (
-                                <tr key={index}>
-                                  <td>{item.materialName}</td>
-                                  <td>{item.requiredQuantity} {item.unit}</td>
-                                  <td>{item.factoryStock} {item.unit}</td>
-                                  <td>{item.shortfall} {item.unit}</td>
-                                  <td>{item.supplierName}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        ) : (
-                          <p>✅ Tüm malzemeler yeterli</p>
-                        )}
-                      </div>
+        <div className="table-scroll">
+          <table className="responsive-table">
+            <thead>
+              <tr>
+                <th>Ürün</th>
+                <th>Miktar</th>
+                <th>Müşteri</th>
+                <th>Öncelik</th>
+                <th>Not</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedOrders.map(order => (
+                <>
+                  <tr key={order.id}>
+                    <td data-label="Ürün">{order.product.name}</td>
+                    <td data-label="Miktar">{order.quantityKg} kg</td>
+                   <td data-label="Müşteri">{order.customerName}</td>
+                    <td data-label="Öncelik"><span className={priorityClass(order.priority)}>{order.priority}</span></td>
+                    <td data-label="Not">{order.notes || '-'}</td>
+                    <td data-label="Durum"><span className={statusClass(order.status)}>{order.status}</span></td>
+                    <td data-label="İşlem" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      <button onClick={() => toggleDetails(order)}>
+                        {expandedOrderId === order.id ? 'Detayı Gizle' : 'Detay Göster'}
+                      </button>
+                      {order.status === 'PENDING' && (
+                        <>
+                          <button onClick={() => handleStartProduction(order.id)}>Üretime Başlat</button>
+                          <button className="danger" onClick={() => handleDeleteOrder(order.id)}>Sil</button>
+                          <button className="danger" onClick={() => handleCancelOrder(order.id)}>İptal Et</button>
+                        </>
+                      )}
+                      {order.status === 'IN_PRODUCTION' && (
+                        <>
+                          <button onClick={() => handleComplete(order.id)}>Tamamlandı</button>
+                          <button className="secondary" onClick={() => handleRevertProduction(order.id)}>Geri Al</button>
+                        </>
+                      )}
+                      {order.status === 'COMPLETED' && (
+                        <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Depoda sevkiyat bekliyor</div>
+                      )}
                     </td>
                   </tr>
-                )}
-              </>
-            ))}
-          </tbody>
-        </table>
+
+                  {expandedOrderId === order.id && feasibilityData && (
+                    <tr>
+                      <td colSpan="7">
+                        <div className="order-detail-panel">
+                          <p>Üretim süresi: {feasibilityData.productionTimeHours} saat</p>
+                          <p>Tahmini teslim: {feasibilityData.deliveryEstimateText}</p>
+
+                          {feasibilityData.materialShortfalls.length > 0 ? (
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Malzeme</th>
+                                  <th>Gereken</th>
+                                  <th>Fabrikada</th>
+                                  <th>Eksik</th>
+                                  <th>Tedarikçi</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {feasibilityData.materialShortfalls.map((item, index) => (
+                                  <tr key={index}>
+                                    <td>{item.materialName}</td>
+                                    <td>{item.requiredQuantity} {item.unit}</td>
+                                    <td>{item.factoryStock} {item.unit}</td>
+                                    <td>{item.shortfall} {item.unit}</td>
+                                    <td>{item.supplierName}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          ) : (
+                            <p>✅ Tüm malzemeler yeterli</p>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <button
           className="secondary"
           disabled={currentPage === 0}
