@@ -153,7 +153,7 @@ function SalesPage() {
       {orders.length === 0 ? (
         <div className="empty-state">📋 Henüz sipariş oluşturmadınız.</div>
       ) : (
-        <table>
+        <table className="responsive-table">
           <thead>
             <tr>
               <th>Ürün</th>
@@ -167,12 +167,12 @@ function SalesPage() {
           <tbody>
             {orders.map(order => (
               <tr key={order.id}>
-                <td>{order.product.name}</td>
-                <td>{order.quantityKg} kg</td>
-                <td>{order.customerName}</td>
-                <td><span className={priorityClass(order.priority)}>{order.priority}</span></td>
-                <td>{order.notes || '-'}</td>
-                <td><span className={statusClass(order.status)}>{order.status}</span></td>
+                <td data-label="Ürün">{order.product.name}</td>
+                <td data-label="Miktar">{order.quantityKg} kg</td>
+                <td data-label="Müşteri">{order.customerName}</td>
+                <td data-label="Öncelik"><span className={priorityClass(order.priority)}>{order.priority}</span></td>
+                <td data-label="Not">{order.notes || '-'}</td>
+                <td data-label="Durum"><span className={statusClass(order.status)}>{order.status}</span></td>
               </tr>
             ))}
           </tbody>
