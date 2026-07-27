@@ -178,31 +178,33 @@ function InventoryPage() {
           <div className="empty-state">📦 Şu an sevkiyat bekleyen sipariş yok.</div>
         ) : (
           <>
-            <table>
-              <thead>
-                <tr>
-                  <th>Ürün</th>
-                  <th>Miktar</th>
-                  <th>Müşteri</th>
-                  <th>İşlem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingShipments.map(order => (
-                  <tr key={order.id}>
-                    <td>{order.product.name}</td>
-                    <td>{order.quantityKg} kg</td>
-                    <td>{order.customerName}</td>
-                    <td>
-                      <button onClick={() => handleShip(order)}>Gönderildi</button>
-                    </td>
+            <div className="table-scroll">
+              <table className="responsive-table">
+                <thead>
+                  <tr>
+                    <th>Ürün</th>
+                    <th>Miktar</th>
+                    <th>Müşteri</th>
+                    <th>İşlem</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pendingShipments.map(order => (
+                    <tr key={order.id}>
+                      <td data-label="Ürün">{order.product.name}</td>
+                      <td data-label="Miktar">{order.quantityKg} kg</td>
+                      <td data-label="Müşteri">{order.customerName}</td>
+                      <td data-label="İşlem">
+                        <button onClick={() => handleShip(order)}>Gönderildi</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {pendingTotalPages > 1 && (
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button className="secondary" disabled={pendingPage === 0} onClick={() => setPendingPage(pendingPage - 1)}>← Önceki</button>
                 <span>Sayfa {pendingPage + 1} / {pendingTotalPages}</span>
                 <button className="secondary" disabled={pendingPage >= pendingTotalPages - 1} onClick={() => setPendingPage(pendingPage + 1)}>Sonraki →</button>
@@ -215,36 +217,38 @@ function InventoryPage() {
       <div className="card">
         <h2>Depo stok yönetimi</h2>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Malzeme</th>
-              <th>Mevcut Stok</th>
-              <th>Miktar</th>
-              <th>İşlem</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stock.map(item => (
-              <tr key={item.material.id}>
-                <td>{item.material.name}</td>
-                <td>{item.balanceAfter} {item.material.unit}</td>
-                <td>
-                  <input
-                    type="number"
-                    placeholder="Miktar"
-                    value={amounts[item.material.id] || ''}
-                    onChange={(e) => handleAmountChange(item.material.id, e.target.value)}
-                  />
-                </td>
-                <td>
-                  <button onClick={() => handleAdjust(item.material.id, 'ADDITION')}>Ekle</button>
-                  <button className="secondary" onClick={() => handleAdjust(item.material.id, 'REMOVAL')}>Çıkar</button>
-                </td>
+        <div className="table-scroll">
+          <table className="responsive-table">
+            <thead>
+              <tr>
+                <th>Malzeme</th>
+                <th>Mevcut Stok</th>
+                <th>Miktar</th>
+                <th>İşlem</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {stock.map(item => (
+                <tr key={item.material.id}>
+                  <td data-label="Malzeme">{item.material.name}</td>
+                  <td data-label="Mevcut Stok">{item.balanceAfter} {item.material.unit}</td>
+                  <td data-label="Miktar">
+                    <input
+                      type="number"
+                      placeholder="Miktar"
+                      value={amounts[item.material.id] || ''}
+                      onChange={(e) => handleAmountChange(item.material.id, e.target.value)}
+                    />
+                  </td>
+                  <td data-label="İşlem">
+                    <button onClick={() => handleAdjust(item.material.id, 'ADDITION')}>Ekle</button>
+                    <button className="secondary" onClick={() => handleAdjust(item.material.id, 'REMOVAL')}>Çıkar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="card">
@@ -253,7 +257,7 @@ function InventoryPage() {
         </h2>
         {showStockHistory && (
           <div>
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               <input
                 type="text"
                 placeholder="Malzeme ara..."
@@ -273,32 +277,34 @@ function InventoryPage() {
             {filteredHistory.length === 0 ? (
               <div className="empty-state">📜 Kayıt bulunamadı.</div>
             ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Malzeme</th>
-                    <th>Değişim</th>
-                    <th>Yeni Bakiye</th>
-                    <th>Tür</th>
-                    <th>Tarih</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredHistory.map(tx => (
-                    <tr key={tx.id}>
-                      <td>{tx.material.name}</td>
-                      <td>{tx.quantityChange > 0 ? '+' : ''}{tx.quantityChange} {tx.material.unit}</td>
-                      <td>{tx.balanceAfter} {tx.material.unit}</td>
-                      <td>{tx.type}</td>
-                      <td>{tx.createdAt}</td>
+              <div className="table-scroll">
+                <table className="responsive-table">
+                  <thead>
+                    <tr>
+                      <th>Malzeme</th>
+                      <th>Değişim</th>
+                      <th>Yeni Bakiye</th>
+                      <th>Tür</th>
+                      <th>Tarih</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredHistory.map(tx => (
+                      <tr key={tx.id}>
+                        <td data-label="Malzeme">{tx.material.name}</td>
+                        <td data-label="Değişim">{tx.quantityChange > 0 ? '+' : ''}{tx.quantityChange} {tx.material.unit}</td>
+                        <td data-label="Yeni Bakiye">{tx.balanceAfter} {tx.material.unit}</td>
+                        <td data-label="Tür">{tx.type}</td>
+                        <td data-label="Tarih">{tx.createdAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
 
             {historyTotalPages > 1 && (
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button className="secondary" disabled={historyPage === 0} onClick={() => setHistoryPage(historyPage - 1)}>← Önceki</button>
                 <span>Sayfa {historyPage + 1} / {historyTotalPages}</span>
                 <button className="secondary" disabled={historyPage >= historyTotalPages - 1} onClick={() => setHistoryPage(historyPage + 1)}>Sonraki →</button>
@@ -317,31 +323,33 @@ function InventoryPage() {
             <div className="empty-state">📦 Henüz gönderilmiş sipariş yok.</div>
           ) : (
             <>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Ürün</th>
-                    <th>Miktar</th>
-                    <th>Müşteri</th>
-                    <th>İşlem</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {shippedOrders.map(order => (
-                    <tr key={order.id}>
-                      <td>{order.product.name}</td>
-                      <td>{order.quantityKg} kg</td>
-                      <td>{order.customerName}</td>
-                      <td>
-                        <button className="secondary" onClick={() => handleRevertShipment(order)}>Geri Al</button>
-                      </td>
+              <div className="table-scroll">
+                <table className="responsive-table">
+                  <thead>
+                    <tr>
+                      <th>Ürün</th>
+                      <th>Miktar</th>
+                      <th>Müşteri</th>
+                      <th>İşlem</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {shippedOrders.map(order => (
+                      <tr key={order.id}>
+                        <td data-label="Ürün">{order.product.name}</td>
+                        <td data-label="Miktar">{order.quantityKg} kg</td>
+                        <td data-label="Müşteri">{order.customerName}</td>
+                        <td data-label="İşlem">
+                          <button className="secondary" onClick={() => handleRevertShipment(order)}>Geri Al</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               {shippedTotalPages > 1 && (
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <button className="secondary" disabled={shippedPage === 0} onClick={() => setShippedPage(shippedPage - 1)}>← Önceki</button>
                   <span>Sayfa {shippedPage + 1} / {shippedTotalPages}</span>
                   <button className="secondary" disabled={shippedPage >= shippedTotalPages - 1} onClick={() => setShippedPage(shippedPage + 1)}>Sonraki →</button>
