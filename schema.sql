@@ -237,7 +237,7 @@ ALTER TABLE materials ADD COLUMN description VARCHAR(300);
 -- Reçete miktarları yanlış sütuna (quantity_per_10kg) girilmişti, doğru sütuna (quantity_per_100kg) taşındı
 UPDATE recipes SET quantity_per_100kg = quantity_per_10kg * 10;
 
--- Çoklu rol destekli test kullanıcıları eklendi
+
+-- Yönetici (ADMIN) kullanıcısı - kullanıcı yönetimi ekranını görebilir
 INSERT INTO users (username, password, role) VALUES
-('satisplan1', '$2a$10$pArY6.23QXtTV1peAyrM5ehOW45EilT3kpQRNiV8CZrb.KL43SXJW', 'SALES,PLANNER'),
-('depoplan1', '$2a$10$pArY6.23QXtTV1peAyrM5ehOW45EilT3kpQRNiV8CZrb.KL43SXJW', 'WAREHOUSE,PLANNER');
+('yonetici1', '$2a$10$HpcIU2OofIHe4GH0blYT2.K2lMtMrYEyBiYsV2QgjazhmVUVv8fQ.', 'ADMIN');
