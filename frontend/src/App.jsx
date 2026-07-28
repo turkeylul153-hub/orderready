@@ -4,23 +4,27 @@ import LoginPage from './LoginPage'
 import InventoryPage from './InventoryPage'
 import SalesPage from './SalesPage'
 import ProductionPlanningPage from './ProductionPlanningPage'
+import UserManagementPage from './UserManagementPage'
 
 const roleLabels = {
   WAREHOUSE: 'Depo Yönetimi',
   SALES: 'Sipariş Oluşturma',
-  PLANNER: 'Üretim Planlama'
+  PLANNER: 'Üretim Planlama',
+  ADMIN: 'Kullanıcı Yönetimi'
 }
 
 const roleIcons = {
   WAREHOUSE: '📦',
   SALES: '🧾',
-  PLANNER: '🏭'
+  PLANNER: '🏭',
+  ADMIN: '⚙️'
 }
 
 const rolePages = {
   WAREHOUSE: InventoryPage,
   SALES: SalesPage,
-  PLANNER: ProductionPlanningPage
+  PLANNER: ProductionPlanningPage,
+  ADMIN: UserManagementPage
 }
 
 function App() {
