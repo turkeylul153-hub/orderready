@@ -31,6 +31,7 @@ public class AuthService {
         userRepository.save(user);
 
         LoginResponse response = new LoginResponse();
+        response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setRole(user.getRole());
         response.setToken(token);
@@ -43,6 +44,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Geçersiz oturum"));
 
         LoginResponse response = new LoginResponse();
+        response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setRole(user.getRole());
         response.setToken(token);
