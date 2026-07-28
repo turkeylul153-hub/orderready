@@ -20,13 +20,16 @@ Sipariş durumu değiştikçe (üretime başla → tamamlandı → gönderildi),
 - **Kimlik Doğrulama:** BCrypt şifreleme + token tabanlı oturum yönetimi
 - **Yetkilendirme:** Her API isteğinde token doğrulayan merkezi filter (TokenFilter)
 
-## Kullanıcı Rolleri
+## Kullanıcı Rolleri ve Yetki Yönetimi
 
 - **WAREHOUSE** (Depo)
 - **SALES** (Satış)
 - **PLANNER** (Üretim Planlama)
+- **ADMIN** (Kullanıcı Yönetimi)
 
-Bir kullanıcı, ihtiyaç halinde birden fazla role sahip olabilir (örn. "WAREHOUSE,PLANNER"). Çoklu rollü kullanıcılar, giriş sonrası ekranın üstünde her rol için ayrı bir kart görür, kartlara tıklayarak aralarında geçiş yapabilir. (Yetki ekleme/çıkarma arayüzü geliştirme aşamasında.)
+Bir kullanıcı, ihtiyaç halinde birden fazla role sahip olabilir (örn. "WAREHOUSE,PLANNER"). Çoklu rollü kullanıcılar, giriş sonrası ekranın üstünde her rol için ayrı bir kart görür, kartlara tıklayarak aralarında geçiş yapabilir.
+
+**Yetki talep sistemi:** Bir kullanıcı, sahip olmadığı bir role (soluk, kilitli görünen bir kart olarak) tıklayarak erişim talep edebilir. Talep, ADMIN rolüne sahip bir kullanıcının panelinde "Bekleyen Yetki Talepleri" olarak görünür; onaylanırsa kullanıcının rolü otomatik güncellenir, reddedilirse hiçbir değişiklik yapılmaz.
 
 ## Kapsam (Güncel)
 
@@ -55,6 +58,11 @@ Bir kullanıcı, ihtiyaç halinde birden fazla role sahip olabilir (örn. "WAREH
 - Sevkiyat yapma, sevkiyatı PIN ile geri alma
 - Stok hareketleri geçmişi — malzeme adı ve hareket türüne göre filtrelenebilir, sayfalanabilir
 
+### Kullanıcı Yönetimi (ADMIN)
+- Tüm kullanıcıları ve rollerini listeleme
+- Kullanıcılara doğrudan rol ekleme/çıkarma
+- Bekleyen yetki taleplerini görüntüleme, onaylama veya reddetme
+
 ### Genel
 - Transaction bazlı (event sourcing) stok geçmişi — hiçbir kayıt silinmez
 - Toast bildirimleri (başarı/hata) — tüm sayfalarda tutarlı
@@ -64,7 +72,7 @@ Bir kullanıcı, ihtiyaç halinde birden fazla role sahip olabilir (örn. "WAREH
 ## Kapsam Dışı (v1 için, ileride eklenebilir)
 
 - Çoklu depo desteği (altyapı hazır, arayüz yok)
-- Yetki ekleme/çıkarma arayüzü (şu an roller elle veritabanında atanıyor, geliştirme aşamasında)
+- Yetki taleplerinin süreli (zaman aşımlı) olması
 - Düşük stok otomatik bildirimi (e-posta/SMS)
 - Tedarikçiye otomatik sipariş/mail gönderimi
 - Raporlama ve analitik ekranları
