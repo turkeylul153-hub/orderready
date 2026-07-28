@@ -37,18 +37,21 @@ function LoginPage({ onLoginSuccess }) {
             placeholder="Kullanıcı adı"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
           />
-         <input
-           type="password"
-           placeholder="Şifre"
-           value={password}
-           onChange={(e) => setPassword(e.target.value)}
-           onKeyDown={(e) => {
-             if (e.key === 'Enter') {
-               handleLogin()
-             }
-           }}
-         />
+
+        <input
+          type="password"
+          placeholder="Şifre"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleLogin()
+            }
+          }}
+          autoComplete="current-password"
+        />
           <button onClick={handleLogin}>Giriş yap</button>
           {error && <p className="error-text">{error}</p>}
         </div>
