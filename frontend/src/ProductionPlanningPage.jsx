@@ -1,7 +1,7 @@
-import { authFetch } from './api'
 import { useState, useEffect } from 'react'
 import ManagementPanel from './ManagementPanel'
 import Toast from './Toast'
+import { authFetch } from './api'
 
 function statusClass(status) {
   return 'status-badge status-' + status.toLowerCase()
@@ -9,6 +9,21 @@ function statusClass(status) {
 
 function priorityClass(priority) {
   return 'priority-badge priority-' + priority.toLowerCase()
+}
+
+function statusLabel(status) {
+  const labels = {
+    PENDING: 'Bekliyor',
+    IN_PRODUCTION: 'Üretimde',
+    COMPLETED: 'Tamamlandı',
+    SHIPPED: 'Gönderildi',
+    CANCELLED: 'İptal Edildi'
+  }
+  return labels[status] || status
+}
+
+function priorityLabel(priority) {
+  return priority === 'URGENT' ? 'Acil' : 'Normal'
 }
 
 function ProductionPlanningPage() {
@@ -247,11 +262,11 @@ function ProductionPlanningPage() {
                   <tr key={order.id}>
                     <td data-label="Ürün">{order.product.name}</td>
                     <td data-label="Miktar">{order.quantityKg} kg</td>
-                   <td data-label="Müşteri">{order.customerName}</td>
-                    <td data-label="Öncelik"><span className={priorityClass(order.priority)}>{order.priority}</span></td>
+                    <td data-label="Müşteri">{order.customerName}</td>
+                    <td data-label="Öncelik"><span className={priorityClass(order.priority)}>{priorityLabel(order.priority)}</span></td>
                     <td data-label="Not">{order.notes || '-'}</td>
-                    <td data-label="Durum"><span className={statusClass(order.status)}>{order.status}</span></td>
-                    <td data-label="İşlem" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    <td data-label="Durum"><span className={statusClass(order.status)}>{statusLabel(order.status)}</span></td>
+                    <td data-label="İşlem">
                       <button onClick={() => toggleDetails(order)}>
                         {expandedOrderId === order.id ? 'Detayı Gizle' : 'Detay Göster'}
                       </button>

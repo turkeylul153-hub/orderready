@@ -1,6 +1,6 @@
-import { authFetch } from './api'
 import { useState, useEffect } from 'react'
 import Toast from './Toast'
+import { authFetch } from './api'
 
 function statusClass(status) {
   return 'status-badge status-' + status.toLowerCase()
@@ -8,6 +8,21 @@ function statusClass(status) {
 
 function priorityClass(priority) {
   return 'priority-badge priority-' + priority.toLowerCase()
+}
+
+function statusLabel(status) {
+  const labels = {
+    PENDING: 'Bekliyor',
+    IN_PRODUCTION: 'Üretimde',
+    COMPLETED: 'Tamamlandı',
+    SHIPPED: 'Gönderildi',
+    CANCELLED: 'İptal Edildi'
+  }
+  return labels[status] || status
+}
+
+function priorityLabel(priority) {
+  return priority === 'URGENT' ? 'Acil' : 'Normal'
 }
 
 function SalesPage() {
@@ -42,7 +57,7 @@ function SalesPage() {
     const controller = new AbortController()
 
     const timeoutId = setTimeout(() => {
-        authFetch('http://localhost:8080/api/feasibility/check', {
+      authFetch('http://localhost:8080/api/feasibility/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: selectedProductId, quantityKg: quantity }),
@@ -154,33 +169,35 @@ function SalesPage() {
       {orders.length === 0 ? (
         <div className="empty-state">📋 Henüz sipariş oluşturmadınız.</div>
       ) : (
-        <table className="responsive-table">
-          <thead>
-            <tr>
-              <th>Ürün</th>
-              <th>Miktar</th>
-              <th>Müşteri</th>
-              <th>Öncelik</th>
-              <th>Not</th>
-              <th>Durum</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map(order => (
-              <tr key={order.id}>
-                <td data-label="Ürün">{order.product.name}</td>
-                <td data-label="Miktar">{order.quantityKg} kg</td>
-                <td data-label="Müşteri">{order.customerName}</td>
-                <td data-label="Öncelik"><span className={priorityClass(order.priority)}>{order.priority}</span></td>
-                <td data-label="Not">{order.notes || '-'}</td>
-                <td data-label="Durum"><span className={statusClass(order.status)}>{order.status}</span></td>
+        <div className="table-scroll">
+          <table className="responsive-table">
+            <thead>
+              <tr>
+                <th>Ürün</th>
+                <th>Miktar</th>
+                <th>Müşteri</th>
+                <th>Öncelik</th>
+                <th>Not</th>
+                <th>Durum</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map(order => (
+                <tr key={order.id}>
+                  <td data-label="Ürün">{order.product.name}</td>
+                  <td data-label="Miktar">{order.quantityKg} kg</td>
+                  <td data-label="Müşteri">{order.customerName}</td>
+                  <td data-label="Öncelik"><span className={priorityClass(order.priority)}>{priorityLabel(order.priority)}</span></td>
+                  <td data-label="Not">{order.notes || '-'}</td>
+                  <td data-label="Durum"><span className={statusClass(order.status)}>{statusLabel(order.status)}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <button
           className="secondary"
           disabled={currentPage === 0}
