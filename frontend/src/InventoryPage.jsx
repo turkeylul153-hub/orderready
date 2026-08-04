@@ -229,24 +229,29 @@ function InventoryPage() {
               </tr>
             </thead>
             <tbody>
-              {stock.map(item => (
-                <tr key={item.material.id}>
-                  <td data-label="Malzeme">{item.material.name}</td>
-                  <td data-label="Mevcut Stok">{item.balanceAfter} {item.material.unit}</td>
-                  <td data-label="Miktar">
-                    <input
-                      type="number"
-                      placeholder="Miktar"
-                      value={amounts[item.material.id] || ''}
-                      onChange={(e) => handleAmountChange(item.material.id, e.target.value)}
-                    />
-                  </td>
-                  <td data-label="İşlem">
-                    <button onClick={() => handleAdjust(item.material.id, 'ADDITION')}>Ekle</button>
-                    <button className="secondary" onClick={() => handleAdjust(item.material.id, 'REMOVAL')}>Çıkar</button>
-                  </td>
-                </tr>
-              ))}
+              {stock.map(item => {
+                const isLow = item.balanceAfter <= item.material.lowStockThreshold
+                return (
+                  <tr key={item.material.id} style={isLow ? { background: '#fee2e2' } : {}}>
+                    <td data-label="Malzeme">
+                      {item.material.name} {isLow && '⚠️'}
+                    </td>
+                    <td data-label="Mevcut Stok">{item.balanceAfter} {item.material.unit}</td>
+                    <td data-label="Miktar">
+                      <input
+                        type="number"
+                        placeholder="Miktar"
+                        value={amounts[item.material.id] || ''}
+                        onChange={(e) => handleAmountChange(item.material.id, e.target.value)}
+                      />
+                    </td>
+                    <td data-label="İşlem">
+                      <button onClick={() => handleAdjust(item.material.id, 'ADDITION')}>Ekle</button>
+                      <button className="secondary" onClick={() => handleAdjust(item.material.id, 'REMOVAL')}>Çıkar</button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
