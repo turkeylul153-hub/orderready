@@ -4,6 +4,7 @@ import Toast from './Toast'
 
 function InventoryPage() {
   const [stock, setStock] = useState([])
+  const [productStock, setProductStock] = useState([])
   const [amounts, setAmounts] = useState({})
   const [pendingShipments, setPendingShipments] = useState([])
   const [shippedOrders, setShippedOrders] = useState([])
@@ -28,6 +29,10 @@ function InventoryPage() {
   }, [])
 
   useEffect(() => {
+    fetchProductStock()
+  }, [])
+
+  useEffect(() => {
     fetchPendingShipments()
   }, [pendingPage])
 
@@ -47,6 +52,12 @@ function InventoryPage() {
     authFetch('http://localhost:8080/api/material-stock')
       .then(response => response.json())
       .then(data => setStock(data))
+  }
+
+  function fetchProductStock() {
+    authFetch('http://localhost:8080/api/product-stock')
+      .then(response => response.json())
+      .then(data => setProductStock(data))
   }
 
   function fetchPendingShipments() {
@@ -129,6 +140,7 @@ function InventoryPage() {
       .then(() => {
         setToast({ message: 'Sipariş gönderildi', type: 'success' })
         fetchPendingShipments()
+        fetchProductStock()
       })
       .catch(() => setToast({ message: 'Gönderim başarısız oldu', type: 'error' }))
   }
@@ -154,6 +166,7 @@ function InventoryPage() {
         setToast({ message: 'Gönderim geri alındı', type: 'success' })
         fetchShippedOrders()
         fetchPendingShipments()
+        fetchProductStock()
       })
       .catch(error => setToast({ message: error.message, type: 'error' }))
   }
@@ -255,6 +268,37 @@ function InventoryPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="card">
+        <h2>Ürün Stoğu</h2>
+        {productStock.length === 0 ? (
+          <div className="empty-state">📦 Henüz ürün stoğu kaydı yok.</div>
+        ) : (
+          <div className="table-scroll">
+            <table className="responsive-table">
+              <thead>
+                <tr>
+                  <th>Ürün</th>
+                  <th>Mevcut Stok</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productStock.map(item => {
+                  const isDepleted = item.balanceAfter <= 0
+                  return (
+                    <tr key={item.product.id} style={isDepleted ? { background: '#fee2e2' } : {}}>
+                      <td data-label="Ürün">
+                        {item.product.name} {isDepleted && '⚠️'}
+                      </td>
+                      <td data-label="Mevcut Stok">{item.balanceAfter} adet</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="card">
