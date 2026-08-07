@@ -3,9 +3,12 @@ package com.orderready.backend.controller;
 import com.orderready.backend.dto.CancelRequest;
 import com.orderready.backend.dto.PinRequest;
 import com.orderready.backend.entity.Order;
+import com.orderready.backend.entity.ProductStockTransaction;
+import com.orderready.backend.entity.Warehouse;
 import com.orderready.backend.repository.MaterialStockTransactionRepository;
 import com.orderready.backend.repository.OrderRepository;
 import com.orderready.backend.repository.ProductStockTransactionRepository;
+import com.orderready.backend.repository.WarehouseRepository;
 import com.orderready.backend.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,6 +16,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -31,6 +38,9 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private WarehouseRepository warehouseRepository;
+
     // GET /api/orders - siparişleri sayfalı olarak döndürür, isteğe bağlı durum filtresiyle
     @GetMapping
     public Page<Order> getAllOrders(
@@ -44,10 +54,48 @@ public class OrderController {
         return orderRepository.findAll(pageable);
     }
 
-    // POST /api/orders - yeni sipariş oluşturur
+    // POST /api/orders - yeni sipariş oluşturur; depoda gerçekten müsait ürün varsa otomatik tamamlar
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
-        return orderRepository.save(order);
+        order.setStatus("PENDING");
+        Order savedOrder = orderRepository.save(order);
+
+        BigDecimal totalProductStock = productTxRepository
+                .findFirstByProduct_IdOrderByCreatedAtDesc(savedOrder.getProduct().getId())
+                .map(ProductStockTransaction::getBalanceAfter)
+                .orElse(BigDecimal.ZERO);
+
+        // COMPLETED durumda, henüz sevk edilmemiş siparişlerin toplamını bul (bunlar zaten "söz verilmiş")
+        List<Order> reservedOrders = orderRepository.findByProduct_IdAndStatus(savedOrder.getProduct().getId(), "COMPLETED");
+        BigDecimal reservedQuantity = reservedOrders.stream()
+                .map(Order::getQuantityKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Gerçekten müsait olan stok = toplam - zaten söz verilmiş olan
+        BigDecimal availableProductStock = totalProductStock.subtract(reservedQuantity);
+
+        boolean fullyCoveredByStock = availableProductStock.compareTo(savedOrder.getQuantityKg()) >= 0;
+
+        if (fullyCoveredByStock) {
+            Warehouse warehouse = warehouseRepository.findAll().get(0);
+            BigDecimal newBalance = totalProductStock.subtract(savedOrder.getQuantityKg());
+
+            ProductStockTransaction tx = new ProductStockTransaction();
+            tx.setProduct(savedOrder.getProduct());
+            tx.setWarehouse(warehouse);
+            tx.setQuantityChange(savedOrder.getQuantityKg().negate());
+            tx.setBalanceAfter(newBalance);
+            tx.setType("ORDER_CONSUMPTION");
+            tx.setOrder(savedOrder);
+            tx.setCreatedAt(LocalDateTime.now());
+            productTxRepository.save(tx);
+
+            savedOrder.setStatus("COMPLETED");
+            savedOrder.setShortfallQuantityKg(BigDecimal.ZERO);
+            return orderRepository.save(savedOrder);
+        }
+
+        return savedOrder;
     }
 
     // DELETE /api/orders/{id} - sadece PENDING durumundaki siparişleri siler

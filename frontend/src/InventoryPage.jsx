@@ -5,6 +5,7 @@ import Toast from './Toast'
 function InventoryPage() {
   const [stock, setStock] = useState([])
   const [productStock, setProductStock] = useState([])
+  const [productAmounts, setProductAmounts] = useState({})
   const [amounts, setAmounts] = useState({})
   const [pendingShipments, setPendingShipments] = useState([])
   const [shippedOrders, setShippedOrders] = useState([])
@@ -13,10 +14,15 @@ function InventoryPage() {
   const [historyTypeFilter, setHistoryTypeFilter] = useState('ALL')
   const [showShippedHistory, setShowShippedHistory] = useState(false)
   const [showStockHistory, setShowStockHistory] = useState(false)
+  const [showProductHistory, setShowProductHistory] = useState(false)
+  const [productHistory, setProductHistory] = useState([])
   const [toast, setToast] = useState(null)
 
   const [historyPage, setHistoryPage] = useState(0)
   const [historyTotalPages, setHistoryTotalPages] = useState(0)
+
+  const [productHistoryPage, setProductHistoryPage] = useState(0)
+  const [productHistoryTotalPages, setProductHistoryTotalPages] = useState(0)
 
   const [pendingPage, setPendingPage] = useState(0)
   const [pendingTotalPages, setPendingTotalPages] = useState(0)
@@ -48,6 +54,12 @@ function InventoryPage() {
     }
   }, [historyPage])
 
+  useEffect(() => {
+    if (showProductHistory) {
+      fetchProductHistory()
+    }
+  }, [productHistoryPage, showProductHistory])
+
   function fetchStock() {
     authFetch('http://localhost:8080/api/material-stock')
       .then(response => response.json())
@@ -58,6 +70,15 @@ function InventoryPage() {
     authFetch('http://localhost:8080/api/product-stock')
       .then(response => response.json())
       .then(data => setProductStock(data))
+  }
+
+  function fetchProductHistory() {
+    authFetch(`http://localhost:8080/api/product-stock/history?page=${productHistoryPage}&size=10`)
+      .then(response => response.json())
+      .then(data => {
+        setProductHistory(data.content)
+        setProductHistoryTotalPages(data.totalPages)
+      })
   }
 
   function fetchPendingShipments() {
@@ -94,6 +115,13 @@ function InventoryPage() {
     setShowStockHistory(!showStockHistory)
   }
 
+  function toggleProductHistory() {
+    if (!showProductHistory) {
+      fetchProductHistory()
+    }
+    setShowProductHistory(!showProductHistory)
+  }
+
   function toggleShippedHistory() {
     if (!showShippedHistory) {
       fetchShippedOrders()
@@ -103,6 +131,10 @@ function InventoryPage() {
 
   function handleAmountChange(materialId, value) {
     setAmounts({ ...amounts, [materialId]: value })
+  }
+
+  function handleProductAmountChange(productId, value) {
+    setProductAmounts({ ...productAmounts, [productId]: value })
   }
 
   function handleAdjust(materialId, type) {
@@ -123,6 +155,28 @@ function InventoryPage() {
         setToast({ message: 'Stok güncellendi', type: 'success' })
         setAmounts({ ...amounts, [materialId]: '' })
         fetchStock()
+      })
+      .catch(error => setToast({ message: 'İşlem başarısız oldu', type: 'error' }))
+  }
+
+  function handleProductAdjust(productId, type) {
+    const quantity = productAmounts[productId]
+
+    if (!quantity) {
+      setToast({ message: 'Lütfen bir miktar girin', type: 'error' })
+      return
+    }
+
+    authFetch(`http://localhost:8080/api/product-stock/${productId}/adjust`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quantity: quantity, type: type })
+    })
+      .then(response => response.json())
+      .then(() => {
+        setToast({ message: 'Ürün stoğu güncellendi', type: 'success' })
+        setProductAmounts({ ...productAmounts, [productId]: '' })
+        fetchProductStock()
       })
       .catch(error => setToast({ message: 'İşlem başarısız oldu', type: 'error' }))
   }
@@ -244,13 +298,14 @@ function InventoryPage() {
             <tbody>
               {stock.map(item => {
                 const isLow = item.balanceAfter <= item.material.lowStockThreshold
+                const cellStyle = isLow ? { background: '#fee2e2' } : {}
                 return (
-                  <tr key={item.material.id} style={isLow ? { background: '#fee2e2' } : {}}>
-                    <td data-label="Malzeme">
+                  <tr key={item.material.id}>
+                    <td data-label="Malzeme" style={cellStyle}>
                       {item.material.name} {isLow && '⚠️'}
                     </td>
-                    <td data-label="Mevcut Stok">{item.balanceAfter} {item.material.unit}</td>
-                    <td data-label="Miktar">
+                    <td data-label="Mevcut Stok" style={cellStyle}>{item.balanceAfter} {item.material.unit}</td>
+                    <td data-label="Miktar" style={cellStyle}>
                       <input
                         type="number"
                         placeholder="Miktar"
@@ -258,7 +313,7 @@ function InventoryPage() {
                         onChange={(e) => handleAmountChange(item.material.id, e.target.value)}
                       />
                     </td>
-                    <td data-label="İşlem">
+                    <td data-label="İşlem" style={cellStyle}>
                       <button onClick={() => handleAdjust(item.material.id, 'ADDITION')}>Ekle</button>
                       <button className="secondary" onClick={() => handleAdjust(item.material.id, 'REMOVAL')}>Çıkar</button>
                     </td>
@@ -281,22 +336,83 @@ function InventoryPage() {
                 <tr>
                   <th>Ürün</th>
                   <th>Mevcut Stok</th>
+                  <th>Miktar</th>
+                  <th>İşlem</th>
                 </tr>
               </thead>
               <tbody>
                 {productStock.map(item => {
                   const isDepleted = item.balanceAfter <= 0
+                  const cellStyle = isDepleted ? { background: '#fee2e2' } : {}
                   return (
-                    <tr key={item.product.id} style={isDepleted ? { background: '#fee2e2' } : {}}>
-                      <td data-label="Ürün">
+                    <tr key={item.product.id}>
+                      <td data-label="Ürün" style={cellStyle}>
                         {item.product.name} {isDepleted && '⚠️'}
                       </td>
-                      <td data-label="Mevcut Stok">{item.balanceAfter} adet</td>
+                      <td data-label="Mevcut Stok" style={cellStyle}>{item.balanceAfter} kg</td>
+                      <td data-label="Miktar" style={cellStyle}>
+                        <input
+                          type="number"
+                          placeholder="Miktar"
+                          value={productAmounts[item.product.id] || ''}
+                          onChange={(e) => handleProductAmountChange(item.product.id, e.target.value)}
+                        />
+                      </td>
+                      <td data-label="İşlem" style={cellStyle}>
+                        <button onClick={() => handleProductAdjust(item.product.id, 'ADDITION')}>Ekle</button>
+                        <button className="secondary" onClick={() => handleProductAdjust(item.product.id, 'REMOVAL')}>Çıkar</button>
+                      </td>
                     </tr>
                   )
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h2 onClick={toggleProductHistory} style={{ cursor: 'pointer' }}>
+          Ürün Stok Hareketleri Geçmişi {showProductHistory ? '▲' : '▼'}
+        </h2>
+        {showProductHistory && (
+          <div>
+            {productHistory.length === 0 ? (
+              <div className="empty-state">📜 Kayıt bulunamadı.</div>
+            ) : (
+              <div className="table-scroll">
+                <table className="responsive-table">
+                  <thead>
+                    <tr>
+                      <th>Ürün</th>
+                      <th>Değişim</th>
+                      <th>Yeni Bakiye</th>
+                      <th>Tür</th>
+                      <th>Tarih</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productHistory.map(tx => (
+                      <tr key={tx.id}>
+                        <td data-label="Ürün">{tx.product.name}</td>
+                        <td data-label="Değişim">{tx.quantityChange > 0 ? '+' : ''}{tx.quantityChange} kg</td>
+                        <td data-label="Yeni Bakiye">{tx.balanceAfter} kg</td>
+                        <td data-label="Tür">{tx.type}</td>
+                        <td data-label="Tarih">{tx.createdAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {productHistoryTotalPages > 1 && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button className="secondary" disabled={productHistoryPage === 0} onClick={() => setProductHistoryPage(productHistoryPage - 1)}>← Önceki</button>
+                <span>Sayfa {productHistoryPage + 1} / {productHistoryTotalPages}</span>
+                <button className="secondary" disabled={productHistoryPage >= productHistoryTotalPages - 1} onClick={() => setProductHistoryPage(productHistoryPage + 1)}>Sonraki →</button>
+              </div>
+            )}
           </div>
         )}
       </div>

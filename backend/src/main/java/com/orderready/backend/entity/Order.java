@@ -19,6 +19,10 @@ public class Order {
 
     @Column(name = "quantity_kg", nullable = false)
     private BigDecimal quantityKg;
+    private BigDecimal shortfallQuantityKg;
+
+    public BigDecimal getShortfallQuantityKg() { return shortfallQuantityKg; }
+    public void setShortfallQuantityKg(BigDecimal shortfallQuantityKg) { this.shortfallQuantityKg = shortfallQuantityKg; }
 
     @Column(name = "customer_name")
     private String customerName;

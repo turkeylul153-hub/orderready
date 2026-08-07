@@ -13,9 +13,11 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-// Bir siparişin üretilebilirliğini (üretim süresi, eksik malzeme, tedarikçi, teslim aralığı) hesaplar
 @Service
 public class FeasibilityService {
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Autowired
     private ProductRepository productRepository;
@@ -27,11 +29,41 @@ public class FeasibilityService {
     private MaterialStockTransactionRepository materialTxRepository;
 
     @Autowired
+    private ProductStockTransactionRepository productTxRepository;
+
+    @Autowired
     private SupplierMaterialRepository supplierMaterialRepository;
 
     public FeasibilityResponse checkFeasibility(FeasibilityRequest request) {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Ürün bulunamadı"));
+
+        // Önce depoda hazır ürün var mı kontrol et
+        BigDecimal totalProductStock = productTxRepository
+                .findFirstByProduct_IdOrderByCreatedAtDesc(product.getId())
+                .map(ProductStockTransaction::getBalanceAfter)
+                .orElse(BigDecimal.ZERO);
+
+        List<Order> reservedOrders = orderRepository.findByProduct_IdAndStatus(product.getId(), "COMPLETED");
+        BigDecimal reservedQuantity = reservedOrders.stream()
+                .map(Order::getQuantityKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal availableProductStock = totalProductStock.subtract(reservedQuantity);
+
+        boolean fullyCoveredByStock = availableProductStock.compareTo(request.getQuantityKg()) >= 0;
+        FeasibilityResponse response = new FeasibilityResponse();
+        response.setProductName(product.getName());
+        response.setRequestedQuantity(request.getQuantityKg());
+        response.setFullyCoveredByStock(fullyCoveredByStock);
+
+        if (fullyCoveredByStock) {
+            response.setProductionTimeHours(BigDecimal.ZERO);
+            response.setHasShortfall(false);
+            response.setDeliveryEstimateText("Depoda mevcut, hemen gönderilebilir");
+            response.setMaterialShortfalls(new ArrayList<>());
+            return response;
+        }
 
         List<Recipe> recipes = recipeRepository.findByProduct_Id(product.getId());
         List<MaterialShortfall> shortfalls = new ArrayList<>();
@@ -80,7 +112,6 @@ public class FeasibilityService {
                 deliveryEstimate = "1-2 iş günü içinde";
             }
         } else {
-            // Eksik var: en büyük eksiklik oranına (eksik / mevcut stok) göre kademeli tahmin yap
             BigDecimal maxShortfallRatio = BigDecimal.ZERO;
             for (MaterialShortfall shortfall : shortfalls) {
                 BigDecimal stockBase = shortfall.getFactoryStock().compareTo(BigDecimal.ZERO) > 0
@@ -101,9 +132,6 @@ public class FeasibilityService {
             }
         }
 
-        FeasibilityResponse response = new FeasibilityResponse();
-        response.setProductName(product.getName());
-        response.setRequestedQuantity(request.getQuantityKg());
         response.setProductionTimeHours(productionTimeHours);
         response.setHasShortfall(hasShortfall);
         response.setDeliveryEstimateText(deliveryEstimate);
