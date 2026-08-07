@@ -154,14 +154,16 @@ function SalesPage() {
         onChange={(e) => setNotes(e.target.value)}
       />
 
-      {feasibility && (
-        <div style={{ margin: '1rem 0', padding: '0.75rem', borderRadius: '8px', background: feasibility.hasShortfall ? '#fff3e0' : '#e8f5e9' }}>
-          {feasibility.hasShortfall
-            ? `⚠️ Bazı malzemeler eksik — Tahmini teslim: ${feasibility.deliveryEstimateText}`
-            : `✅ Stok yeterli — Tahmini teslim: ${feasibility.deliveryEstimateText}`
-          }
-        </div>
-      )}
+     {feasibility && (
+       <div style={{ margin: '1rem 0', padding: '0.75rem', borderRadius: '8px', background: feasibility.fullyCoveredByStock ? '#e0f2fe' : feasibility.hasShortfall ? '#fff3e0' : '#e8f5e9' }}>
+         {feasibility.fullyCoveredByStock
+           ? '📦 Depoda yeterli ürün var, hemen gönderilebilir'
+           : feasibility.hasShortfall
+             ? `⚠️ Bazı malzemeler eksik — Tahmini teslim: ${feasibility.deliveryEstimateText}`
+             : `✅ Stok yeterli — Tahmini teslim: ${feasibility.deliveryEstimateText}`
+         }
+       </div>
+     )}
 
       <button onClick={handleCreateOrder}>Sipariş Oluştur</button>
 

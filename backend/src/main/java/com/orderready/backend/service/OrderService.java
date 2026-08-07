@@ -43,12 +43,55 @@ public class OrderService {
 
         Warehouse warehouse = warehouseRepository.findAll().get(0);
 
+        // YENİ: Mevcut ürün stoğuna bak
+        // Mevcut TOPLAM ürün stoğuna bak
+        BigDecimal totalProductStock = productTxRepository
+                .findFirstByProduct_IdOrderByCreatedAtDesc(order.getProduct().getId())
+                .map(ProductStockTransaction::getBalanceAfter)
+                .orElse(BigDecimal.ZERO);
+
+// Bu ürün için, COMPLETED durumda (henüz sevk edilmemiş) BAŞKA siparişlerin toplamını bul
+        List<Order> reservedOrders = orderRepository.findByProduct_IdAndStatus(order.getProduct().getId(), "COMPLETED");
+        BigDecimal reservedQuantity = reservedOrders.stream()
+                .filter(o -> !o.getId().equals(order.getId()))
+                .map(Order::getQuantityKg)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+// Gerçekten müsait olan stok = toplam - başkalarına zaten ayrılmış olan
+        BigDecimal currentProductStock = totalProductStock.subtract(reservedQuantity);
+
+// Eksik miktarı hesapla (negatif olamaz)
+        BigDecimal shortfall = order.getQuantityKg().subtract(currentProductStock);
+        if (shortfall.compareTo(BigDecimal.ZERO) < 0) {
+            shortfall = BigDecimal.ZERO;
+        }
+        order.setShortfallQuantityKg(shortfall);
+
+        // Eğer depo zaten karşılıyorsa, hiç üretime gerek yok
+        // Eğer depo zaten karşılıyorsa, hiç üretime gerek yok
+        if (shortfall.compareTo(BigDecimal.ZERO) == 0) {
+            // Depodan kullanılan miktarı, ürün stoğundan DÜŞ (çifte sayımı önlemek için)
+            BigDecimal newProductBalance = currentProductStock.subtract(order.getQuantityKg());
+
+            ProductStockTransaction productTx = new ProductStockTransaction();
+            productTx.setProduct(order.getProduct());
+            productTx.setWarehouse(warehouse);
+            productTx.setQuantityChange(order.getQuantityKg().negate());
+            productTx.setBalanceAfter(newProductBalance);
+            productTx.setType("ORDER_CONSUMPTION");
+            productTx.setOrder(order);
+            productTx.setCreatedAt(LocalDateTime.now());
+            productTxRepository.save(productTx);
+
+            order.setStatus("COMPLETED");
+            return orderRepository.save(order);
+        }
         List<Recipe> recipes = recipeRepository.findByProduct_Id(order.getProduct().getId());
 
-        // 1. Adım: Önce tüm malzemelerin yeterli olup olmadığını kontrol et
+        // 1. Adım: Önce tüm malzemelerin yeterli olup olmadığını kontrol et (SADECE eksik miktar için)
         for (Recipe recipe : recipes) {
             BigDecimal required = recipe.getQuantityPer100kg()
-                    .multiply(order.getQuantityKg())
+                    .multiply(shortfall)
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
             BigDecimal currentBalance = materialTxRepository
@@ -64,10 +107,10 @@ public class OrderService {
             }
         }
 
-        // 2. Adım: Kontrol geçildi, şimdi gerçekten düşüş yap
+        // 2. Adım: Kontrol geçildi, şimdi gerçekten düşüş yap (SADECE eksik miktar için)
         for (Recipe recipe : recipes) {
             BigDecimal required = recipe.getQuantityPer100kg()
-                    .multiply(order.getQuantityKg())
+                    .multiply(shortfall)
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
             BigDecimal currentBalance = materialTxRepository
@@ -91,7 +134,6 @@ public class OrderService {
         order.setStatus("IN_PRODUCTION");
         return orderRepository.save(order);
     }
-
     // üretime başlatmayı geri alır: hammaddeyi geri ekler, durumu PENDING'e döndürür
     public Order revertProduction(Long orderId, String pin) {
         verifyPin(pin);

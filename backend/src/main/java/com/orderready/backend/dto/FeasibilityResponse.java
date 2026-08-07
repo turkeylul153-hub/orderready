@@ -3,13 +3,13 @@ package com.orderready.backend.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
-// Uygunluk kontrolünün tam sonucu
 public class FeasibilityResponse {
     private String productName;
     private BigDecimal requestedQuantity;
     private BigDecimal productionTimeHours;
     private boolean hasShortfall;
-    private String deliveryEstimateText; // örn: "1-3 iş günü içinde"
+    private boolean fullyCoveredByStock;
+    private String deliveryEstimateText;
     private List<MaterialShortfall> materialShortfalls;
 
     public String getProductName() { return productName; }
@@ -23,6 +23,9 @@ public class FeasibilityResponse {
 
     public boolean isHasShortfall() { return hasShortfall; }
     public void setHasShortfall(boolean hasShortfall) { this.hasShortfall = hasShortfall; }
+
+    public boolean isFullyCoveredByStock() { return fullyCoveredByStock; }
+    public void setFullyCoveredByStock(boolean fullyCoveredByStock) { this.fullyCoveredByStock = fullyCoveredByStock; }
 
     public String getDeliveryEstimateText() { return deliveryEstimateText; }
     public void setDeliveryEstimateText(String deliveryEstimateText) { this.deliveryEstimateText = deliveryEstimateText; }
