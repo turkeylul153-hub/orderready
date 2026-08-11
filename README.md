@@ -29,9 +29,9 @@ Sipariş durumu değiştikçe (üretime başla → tamamlandı → gönderildi),
 
 Bir kullanıcı, ihtiyaç halinde birden fazla role sahip olabilir (örn. "WAREHOUSE,PLANNER"). Çoklu rollü kullanıcılar, giriş sonrası ekranın üstünde her rol için ayrı bir kart görür, kartlara tıklayarak aralarında geçiş yapabilir.
 
-**Yetki talep sistemi:** Bir kullanıcı, sahip olmadığı bir role (soluk, kilitli görünen bir kart olarak) tıklayarak erişim talep edebilir. Talep, ADMIN rolüne sahip bir kullanıcının panelinde "Bekleyen Yetki Talepleri" olarak görünür; onaylanırsa kullanıcının rolü otomatik güncellenir, reddedilirse hiçbir değişiklik yapılmaz.
+**Yetki talep sistemi:** Bir kullanıcı, sahip olmadığı bir role (soluk, kilitli görünen bir kart olarak) tıklayarak erişim talep edebilir. Talep, ADMIN rolüne sahip bir kullanıcının panelinde "Bekleyen Yetki Talepleri" olarak görünür; onaylanırsa kullanıcının rolü otomatik güncellenir, reddedilirse hiçbir değişiklik yapılmaz. ADMIN, ayrıca kullanıcı yönetim panelinden doğrudan rol ekleyip çıkarabilir.
 
-## Kapsam (Güncel)
+## Kapsam
 
 ### Kimlik Doğrulama ve Güvenlik
 - BCrypt ile şifrelenmiş, rol tabanlı giriş sistemi
@@ -43,20 +43,24 @@ Bir kullanıcı, ihtiyaç halinde birden fazla role sahip olabilir (örn. "WAREH
 ### Satış
 - Yeni sipariş oluşturma
 - Ürün/miktar girilirken otomatik, gecikmeli (debounce) uygunluk kontrolü — eksik malzeme varsa eksikliğin büyüklüğüne göre kademeli teslim tahmini
+- Depoda hazır, müsait ürün varsa bunu anında gösterir ("Depoda yeterli ürün var")
 - Sipariş listesi, sayfalama
 
 ### Üretim Planlama
 - Sipariş listesi: durum filtreleme, arama, öncelik sıralaması (acil önce)
 - Sipariş detayında malzeme ihtiyacı ve tedarikçi bilgisi
-- Üretime başlatma (stok kontrolü + otomatik düşüş), tamamlama
+- Stoktan karşılama: Sipariş oluşturulurken, depoda gerçekten müsait (başka bir siparişe henüz ayrılmamış) ürün varsa, sipariş üretime hiç gerek kalmadan otomatik tamamlanır ve direkt Depo'nun sevkiyat listesine düşer
+- Depo tam karşılamıyorsa, sadece eksik kalan miktar için üretim yapılır (hammadde sadece eksik miktar kadar düşer)
 - PENDING durumundaki, hiç işlem geçmişi olmayan siparişler silinebilir
 - İşlem geçmişi olan siparişler iptal edilebilir (silinmez, geçmiş korunur)
 - Malzeme/tedarikçi yönetim paneli (SQL'e gerek kalmadan ekleme)
 
 ### Depo
-- Hammadde/ürün stok takibi, elle ekleme/çıkarma
+- Hammadde stok takibi, elle ekleme/çıkarma, düşük stok eşiğinin altına düşen malzemeler kırmızı vurgulanır
+- Ürün stoğu takibi — hem sipariş üretiminden hem elle eklemeden gelen stok tek yerde görünür, tükenmiş ürünler vurgulanır
+- Ürün ve malzeme stok hareketleri geçmişi, ayrı ayrı, sayfalanabilir
 - Sevkiyat yapma, sevkiyatı PIN ile geri alma
-- Stok hareketleri geçmişi — malzeme adı ve hareket türüne göre filtrelenebilir, sayfalanabilir
+- Malzeme stok hareketleri geçmişi — malzeme adı ve hareket türüne göre filtrelenebilir
 
 ### Kullanıcı Yönetimi (ADMIN)
 - Tüm kullanıcıları ve rollerini listeleme
@@ -68,12 +72,4 @@ Bir kullanıcı, ihtiyaç halinde birden fazla role sahip olabilir (örn. "WAREH
 - Toast bildirimleri (başarı/hata) — tüm sayfalarda tutarlı
 - Responsive tasarım — telefon genişliğinde tablolar kart formatına dönüşür
 - Sayfalama (pagination) — sipariş ve stok geçmişi listelerinde
-
-## Kapsam Dışı (v1 için, ileride eklenebilir)
-
-- Çoklu depo desteği (altyapı hazır, arayüz yok)
-- Yetki taleplerinin süreli (zaman aşımlı) olması
-- Düşük stok otomatik bildirimi (e-posta/SMS)
-- Tedarikçiye otomatik sipariş/mail gönderimi
-- Raporlama ve analitik ekranları
-- Ürün stoğu için ayrı bir görüntüleme ekranı
+- Durum ve öncelik etiketleri Türkçe gösterilir
