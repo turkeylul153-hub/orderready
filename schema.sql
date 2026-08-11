@@ -241,3 +241,10 @@ UPDATE recipes SET quantity_per_100kg = quantity_per_10kg * 10;
 -- Yönetici (ADMIN) kullanıcısı - kullanıcı yönetimi ekranını görebilir
 INSERT INTO users (username, password, role) VALUES
 ('yonetici1', '$2a$10$HpcIU2OofIHe4GH0blYT2.K2lMtMrYEyBiYsV2QgjazhmVUVv8fQ.', 'ADMIN');
+
+-- Stoktan karşılama özelliği için eklendi (sipariş için eksik üretilen miktarı takip eder)
+ALTER TABLE orders ADD COLUMN shortfall_quantity_kg DECIMAL(10,2);
+
+-- Düşük stok uyarısı için eşik değerleri
+UPDATE materials SET low_stock_threshold = 1000 WHERE type = 'RAW_MATERIAL';
+UPDATE materials SET low_stock_threshold = 100 WHERE type = 'PACKAGING';
