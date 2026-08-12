@@ -313,7 +313,7 @@ function InventoryPage() {
                         onChange={(e) => handleAmountChange(item.material.id, e.target.value)}
                       />
                     </td>
-                    <td data-label="İşlem" style={cellStyle}>
+                    <td data-label="İşlem" className="action-cell" style={cellStyle}>
                       <button onClick={() => handleAdjust(item.material.id, 'ADDITION')}>Ekle</button>
                       <button className="secondary" onClick={() => handleAdjust(item.material.id, 'REMOVAL')}>Çıkar</button>
                     </td>
@@ -358,7 +358,7 @@ function InventoryPage() {
                           onChange={(e) => handleProductAmountChange(item.product.id, e.target.value)}
                         />
                       </td>
-                      <td data-label="İşlem" style={cellStyle}>
+                      <td data-label="İşlem" className="action-cell" style={cellStyle}>
                         <button onClick={() => handleProductAdjust(item.product.id, 'ADDITION')}>Ekle</button>
                         <button className="secondary" onClick={() => handleProductAdjust(item.product.id, 'REMOVAL')}>Çıkar</button>
                       </td>
