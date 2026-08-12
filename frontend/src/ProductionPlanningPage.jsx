@@ -266,7 +266,7 @@ function ProductionPlanningPage() {
                     <td data-label="Öncelik"><span className={priorityClass(order.priority)}>{priorityLabel(order.priority)}</span></td>
                     <td data-label="Not">{order.notes || '-'}</td>
                     <td data-label="Durum"><span className={statusClass(order.status)}>{statusLabel(order.status)}</span></td>
-                    <td data-label="İşlem">
+                    <td data-label="İşlem" className="action-cell">
                       <button onClick={() => toggleDetails(order)}>
                         {expandedOrderId === order.id ? 'Detayı Gizle' : 'Detay Göster'}
                       </button>
@@ -284,7 +284,7 @@ function ProductionPlanningPage() {
                         </>
                       )}
                       {order.status === 'COMPLETED' && (
-                        <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Depoda sevkiyat bekliyor</div>
+                        <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Depoda sevkiyat bekliyor</div>
                       )}
                     </td>
                   </tr>

@@ -108,7 +108,7 @@ function UserManagementPage() {
                     <td data-label="Kullanıcı">{request.user.username}</td>
                     <td data-label="Talep Edilen Rol">{request.requestedRole}</td>
                     <td data-label="Tarih">{request.createdAt}</td>
-                    <td data-label="İşlem" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    <td data-label="İşlem" className="action-cell">
                       <button onClick={() => handleApprove(request.id)}>Onayla</button>
                       <button className="danger" onClick={() => handleReject(request.id)}>Reddet</button>
                     </td>
@@ -137,7 +137,7 @@ function UserManagementPage() {
                 <tr key={user.id}>
                   <td data-label="Kullanıcı Adı">{user.username}</td>
                   <td data-label="Roller">{user.role}</td>
-                  <td data-label="İşlem" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  <td data-label="İşlem" className="action-cell">
                     {allRoles.map(role => (
                       <button
                         key={role}
